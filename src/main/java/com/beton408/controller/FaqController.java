@@ -2,20 +2,24 @@ package com.beton408.controller;
 
 
 import com.beton408.entity.FaqEntity;
+import com.beton408.exception.ResourceNotFoundException;
+import com.beton408.model.MessageResponse;
 import com.beton408.model.QuestionRequest;
 import com.beton408.repository.FaqRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
+import org.springframework.data.jpa.domain.Specification;
 import static com.beton408.security.Helpers.calculateSimilarity;
 import static com.beton408.security.Helpers.createSlug;
-
 
 @RestController
 @RequestMapping("/faq")
@@ -56,7 +60,87 @@ public class FaqController {
             faq.setAnswer(fa.getAnswer());
             return ResponseEntity.ok(faq);
         } else {
-            return new ResponseEntity<String>(new String("404"),HttpStatus.OK);
+            return new ResponseEntity<String>(new String("unknown"),HttpStatus.OK);
         }
     }
+    @PostMapping("/create")
+//    public FaqEntity createFaq(@RequestBody FaqEntity faq) {
+//        return faqRepository.save(faq);
+//    }
+    public ResponseEntity<?> createFaq(@RequestBody FaqEntity faq) {
+        if(faqRepository.findByQuestion(faq.getQuestion()) != null){
+            return new ResponseEntity(new MessageResponse("Question already exists"), HttpStatus.CONFLICT);
+        }else{
+            faqRepository.save(faq);
+            return ResponseEntity.ok(faq);
+        }
+
+    }
+
+    @GetMapping("/get/all")
+
+//    public Page<FaqEntity> getAllFaqs(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size,
+//            @RequestParam(defaultValue = "id") String sortBy,
+//            @RequestParam(defaultValue = "ASC") String sortDir
+//    ) {
+//        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+//        Pageable paging = PageRequest.of(page, size, sort);
+//        return faqRepository.findAll(paging);
+//    }
+    public Page<FaqEntity> getAllFaqs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "ASC") String sortDir,
+            @RequestParam(required = false, defaultValue = "") String searchTerm
+    ) {
+        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
+        Pageable paging = PageRequest.of(page, size, sort);
+
+        Specification<FaqEntity> spec = Specification.where(null);
+
+        if (!searchTerm.isEmpty()) {
+            spec = spec.and((root, criteriaQuery, criteriaBuilder) -> {
+                String pattern = "%" + searchTerm + "%";
+                return criteriaBuilder.or(
+                        criteriaBuilder.like(root.get("question"), pattern)
+                );
+            });
+        }
+        return faqRepository.findAll(spec, paging);
+    }
+
+
+    @GetMapping("/get/{id}")
+    public FaqEntity getFaqById(@PathVariable(value = "id") Long faqId) {
+        return faqRepository.findById(faqId)
+                .orElseThrow(() -> new ResourceNotFoundException("Faq", "id", faqId));
+    }
+    @PutMapping("/update/{id}")
+    public FaqEntity updateFaq(@PathVariable(value = "id") Long faqId,
+                               @RequestBody FaqEntity faqDetails) {
+        FaqEntity faq = faqRepository.findById(faqId)
+                .orElseThrow(() -> new ResourceNotFoundException("Faq", "id", faqId));
+
+        faq.setQuestion(faqDetails.getQuestion());
+        faq.setAnswer(faqDetails.getAnswer());
+
+        return faqRepository.save(faq);
+    }
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteFaq(@PathVariable(value = "id") Long faqId) {
+        FaqEntity faq = faqRepository.findById(faqId)
+                .orElseThrow(() -> new ResourceNotFoundException("Faq", "id", faqId));
+
+        faqRepository.delete(faq);
+
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("/popular-questions")
+    public List<Object[]> getPopularQuestions() {
+        return faqRepository.findMostPopularQuestions();
+    }
+
 }

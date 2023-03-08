@@ -5,6 +5,7 @@ import com.beton408.security.jwt.AuthTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -54,8 +55,12 @@ public class WebSecurityConfig {
                 .cors().and().csrf().disable()
                 .authorizeHttpRequests()
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/faq/**").hasAnyAuthority("USER")
-                .requestMatchers("/user/**").permitAll()
+                .requestMatchers("/upload/**").hasAnyAuthority("STUDENT","ADMIN","LECTURER")
+                .requestMatchers("/files/**").permitAll()
+                .requestMatchers("/faq/**").hasAnyAuthority("STUDENT","ADMIN")
+                .requestMatchers(HttpMethod.GET,"/user/get/**").hasAnyAuthority("STUDENT","ADMIN","LECTURER")
+                .requestMatchers("/user/**").hasAnyAuthority("STUDENT","ADMIN")
+                .requestMatchers("/feedback/**").hasAnyAuthority("STUDENT","ADMIN")
                 .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
                 .anyRequest()
                 .authenticated()

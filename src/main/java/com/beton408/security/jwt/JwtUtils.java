@@ -4,11 +4,13 @@ package com.beton408.security.jwt;
 
 import com.beton408.security.UserDetailsImpl;
 import io.jsonwebtoken.*;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 
@@ -20,7 +22,7 @@ public class JwtUtils {
 //    @Value("!@#SECRET!@#")
 //    private String jwtSecret;
 //đây là phiên bản jwt cũ => cài secretkey 32 bit update jwt 0.11.5, update webconfig
-    @Value("3000000")
+    @Value("#{50 * 60 * 1000}")
     private int jwtExpirationMs;
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
@@ -28,7 +30,6 @@ public class JwtUtils {
                 .setSubject(userPrincipal.getUsername())
                 .claim("id",userPrincipal.getId())
                 .claim("role",userPrincipal.getAuthorities())
-                .claim("password",userPrincipal.getPassword())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
@@ -38,14 +39,32 @@ public class JwtUtils {
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody().getSubject();
     }
-
+    //Phương thức này sẽ lấy token từ header "Authorization" của yêu cầu HTTP,
+    // kiểm tra xem nó có tồn tại và có định dạng đúng không, và trả về token nếu nó hợp lệ.
+    // Nếu không có token hoặc token không hợp lệ, phương thức sẽ trả về null.
+    public static String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+    //Phương thức này sử dụng đối tượng Jwts.parser() để phân tích cú pháp token,
+    // sử dụng SECRET_KEY để xác thực chữ ký của token, và trả về các thông tin được
+    // lưu trữ trong token dưới dạng đối tượng Claims.
+    public static Claims getClaimsFromToken(String token) {
+        return Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token)
+                .getBody();
+    }
     public String generateTokenFromUsername(String username) {
         return Jwts.builder().setSubject(username).setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs)).signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
-    public boolean validateJwtToken(String authToken) {
+    public static boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(authToken);
             return true;

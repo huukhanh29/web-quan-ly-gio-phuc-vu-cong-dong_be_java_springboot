@@ -1,10 +1,7 @@
 package com.beton408.controller;
 
 import com.beton408.entity.UserEntity;
-import com.beton408.model.LoginRequest;
-import com.beton408.model.JwtResponse;
-import com.beton408.model.MessageResponse;
-import com.beton408.model.SignUpRequest;
+import com.beton408.model.*;
 import com.beton408.security.UserDetailsImpl;
 import com.beton408.security.UserDetailsServiceImpl;
 import com.beton408.security.jwt.JwtUtils;
@@ -37,28 +34,46 @@ public class AuthController {
 
     @PostMapping(value = "/signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequest loginModel){
+        UserEntity user;
+        if (loginModel.getUsername().contains("@")) {
+            user = userService.getByEmail(loginModel.getUsername());
+        } else {
+            user = userService.getByUsername(loginModel.getUsername());
+        }
+        if (user == null) {
+            return new ResponseEntity<>(new MessageResponse("INVALID USERNAME OR EMAIL"), HttpStatus.BAD_REQUEST);
+        }
+        if (user.getStatus() == 0) {
+            return new ResponseEntity<>(new MessageResponse("ACCOUNT HAS BEEN BLOCKED"), HttpStatus.BAD_REQUEST);
+        }
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginModel.getUsername(), loginModel.getPassword()));
-
+                new UsernamePasswordAuthenticationToken(user.getUsername(), loginModel.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
-
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-        // RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
-
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority()).collect(Collectors.toList());
-//        System.out.println(roles);
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), roles.get(0),  userDetails.getUsername()));
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), roles.get(0), userDetails.getUsername(), userDetails.getName(), userDetails.getEmail()));
     }
+
     @PostMapping(value = "/signup")
     public ResponseEntity<?> signup(@RequestBody @NonNull SignUpRequest registerModel){
-        if (userService.isUsernameExist(registerModel.getUsername())) {
+        // Check if the email or username already exists
+        if (userService.isEmailExist(registerModel.getEmail())) {
+            return new ResponseEntity(new MessageResponse("ERROR: EMAIL WAS USED"), HttpStatus.BAD_REQUEST);
+        } else if (userService.isUsernameExist(registerModel.getUsername())) {
             return new ResponseEntity(new MessageResponse("ERROR: USERNAME WAS USED"), HttpStatus.BAD_REQUEST);
         }
-        UserEntity user = new UserEntity(registerModel.getUsername(), encoder.encode(registerModel.getPassword()), registerModel.getRole());
+        // Create a new user entity
+        UserEntity user = new UserEntity(registerModel.getUsername(),registerModel.getEmail(), registerModel.getName(), encoder.encode(registerModel.getPassword()),
+                registerModel.getRole(), registerModel.getAvatar(), registerModel.getStatus());
+        // Add the new user to the database
         userService.addUser(user);
-        return new ResponseEntity(user, HttpStatus.OK);
+
+        // Create a sign-up response
+        SignUpResponse userInfo = new SignUpResponse(user.getUsername(), user.getName(), user.getEmail(), user.getRole());
+        // Return the sign-up response
+        return new ResponseEntity(userInfo, HttpStatus.OK);
     }
+
 }

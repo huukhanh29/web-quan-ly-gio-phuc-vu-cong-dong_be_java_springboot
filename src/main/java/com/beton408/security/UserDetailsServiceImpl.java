@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
     PasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -30,7 +32,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserEntity getByUsername(String username){
         return repository.findByUsername(username);
     }
-
+    public UserEntity getByEmail(String email){
+        return repository.findByEmail(email);
+    }
     public void addUser(UserEntity user){
         save(user);
     }
@@ -39,6 +43,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
     UserEntity save(UserEntity user){
         return repository.save(user);
+    }
+    public boolean isEmailExist(String email) {
+        return repository.existsByEmail(email);
+    }
+    public UserEntity getUserById(Long id) {
+        Optional<UserEntity> user = repository.findById(id);
+        return user.orElse(null);
     }
 
 }

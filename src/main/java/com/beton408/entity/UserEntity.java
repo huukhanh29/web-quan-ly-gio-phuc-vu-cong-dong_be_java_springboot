@@ -1,23 +1,94 @@
 package com.beton408.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Entity
-@Table(name="users")
+@Table(name="user")
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id ;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
-
-    public Long getId() {
-        return id;
-    }
+    @Column(unique = true, nullable = false)
+    private String email;
+    @Column(nullable = false)
+    private String name;
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)
     private String role ;
+    @Column(nullable = true)
+    private String avatar ;
+    @Column(nullable = true)
+    private String phone;
+    @Column(nullable = true)
+    @Temporal(TemporalType.DATE)
+    private Date dateOfBirth;
+    @Column(nullable = false)
+    private int status;
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    public UserEntity(int status) {
+        this.status = status;
+    }
+
+    public UserEntity(Long id, String username, String email, String name, String password, String role, String avatar, String phone, Date dateOfBirth, int status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.name = name;
+        this.password = password;
+        this.role = role;
+        this.avatar = avatar;
+        this.phone = phone;
+        this.dateOfBirth = dateOfBirth;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public UserEntity(String username, String email, String name, String password, String role, String avatar, int status){
+        this.username = username;
+        this.email = email;
+        this.name = name;
+        this.password = password;
+        this.role = role;
+        this.avatar = avatar;
+        this.status = status;
+}
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -28,6 +99,22 @@ public class UserEntity {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getPassword() {
@@ -46,19 +133,38 @@ public class UserEntity {
         this.role = role;
     }
 
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     public UserEntity() {
     }
-
-    public UserEntity(Long id, String username, String password, String role) {
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.role = role;
-    }
-    public UserEntity(String username, String password, String role) {
-        this.username = username;
-        this.password = password;
-        this.role= role;
-    }
-
 }
