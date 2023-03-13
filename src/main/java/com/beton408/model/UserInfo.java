@@ -10,12 +10,16 @@ public class UserInfo {
     private final String email;
     private final Date date;
     private final int status;
+    private final String gender;
 
-
+    public String getGender() {
+        return gender;
+    }
 
     public UserInfo(Long id, String username,
                     String name, String email, String role,
-                    Date date, String phone,
+                    Date date, String phone, String gender,
+                    String address,
                     String avatar, int status) {
         this.id = id;
         this.username = username;
@@ -24,9 +28,16 @@ public class UserInfo {
         this.date = date;
         this.status = status;
         this.phone = phone;
+        this.gender = gender;
+        this.address = address;
         this.role = role;
         this.avatar = avatar;
     }
+    public String getAddress() {
+        return address;
+    }
+
+    private final String address;
 
     private final String phone;
     private final String role;
@@ -81,6 +92,8 @@ public class UserInfo {
         this.role = "USER";
         this.avatar = "User.png";
         this.date = null;
+        this.address="";
+        this.gender="";
     }
 }
 

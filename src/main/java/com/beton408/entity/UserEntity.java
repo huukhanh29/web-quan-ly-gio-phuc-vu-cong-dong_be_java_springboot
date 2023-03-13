@@ -30,18 +30,38 @@ public class UserEntity {
     @Column(nullable = true)
     private String phone;
     @Column(nullable = true)
-    @Temporal(TemporalType.DATE)
+    private String gender;
+    @Column(nullable = true)
+    private String address;
+    @Column(nullable = true)
+
     private Date dateOfBirth;
     @Column(nullable = false)
     private int status;
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = true)
+    private LocalDateTime updatedAt;
+    @ManyToOne
+    @JoinColumn(name = "job_title_id", nullable = true)
+    private JobTitleEntity jobTitle;
+
+    public JobTitleEntity getJobTitle() {
+        return jobTitle;
+    }
+
+    public void setJobTitle(JobTitleEntity jobTitle) {
+        this.jobTitle = jobTitle;
+    }
+
+
     public UserEntity(int status) {
         this.status = status;
     }
 
-    public UserEntity(Long id, String username, String email, String name, String password, String role, String avatar, String phone, Date dateOfBirth, int status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public UserEntity(Long id, String username, String email, String name, String password, String role, String avatar, String phone, String gender, String address, Date dateOfBirth, int status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -50,23 +70,42 @@ public class UserEntity {
         this.role = role;
         this.avatar = avatar;
         this.phone = phone;
+        this.gender = gender;
+        this.address = address;
         this.dateOfBirth = dateOfBirth;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
-    public UserEntity(String username, String email, String name, String password, String role, String avatar, int status){
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public UserEntity(String username, String email, String name,
+                      String password, String role, String avatar,
+                      String gender, String address, int status){
         this.username = username;
         this.email = email;
         this.name = name;
         this.password = password;
         this.role = role;
         this.avatar = avatar;
+        this.gender = gender;
+        this.address = address;
         this.status = status;
 }
     public LocalDateTime getCreatedAt() {
@@ -166,5 +205,20 @@ public class UserEntity {
     }
 
     public UserEntity() {
+    }
+    public void updateUser(String phone, Date dateOfBirth, String gender, String address) {
+        if (phone != null) {
+            this.phone = phone;
+        }
+        if (dateOfBirth != null) {
+            this.dateOfBirth = dateOfBirth;
+        }
+        if (gender != null) {
+            this.gender = gender;
+        }
+        if (address != null) {
+            this.address = address;
+        }
+        this.updatedAt = LocalDateTime.now();
     }
 }

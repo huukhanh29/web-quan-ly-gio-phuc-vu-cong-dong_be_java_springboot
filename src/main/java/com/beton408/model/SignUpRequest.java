@@ -5,16 +5,33 @@ public class SignUpRequest {
     private final String name;
     private final String email;
     private final String password;
+    private final String gender;
+
+    public String getGender() {
+        return gender;
+    }
+    private String address;
 
     public String getEmail() {
         return email;
     }
 
-    public SignUpRequest(String username, String name, String email, String password, String role) {
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public SignUpRequest(String username, String name, String email,
+                         String password, String gender, String address, String role) {
         this.username = username;
         this.name = name;
         this.email = email;
         this.password = password;
+        this.gender = gender;
+        this.address =address;
         this.role = role;
     }
 
@@ -38,6 +55,7 @@ public class SignUpRequest {
 
     private final String role;
     private String avatar = "User.png";
+
 
     public String getAvatar() {
         return avatar;

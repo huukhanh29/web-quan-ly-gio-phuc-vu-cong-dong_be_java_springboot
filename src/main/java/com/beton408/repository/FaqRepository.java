@@ -44,13 +44,5 @@ public interface FaqRepository extends JpaRepository<FaqEntity, Long>, JpaSpecif
     Page<FaqEntity> findAll(Specification<FaqEntity> spec, Pageable pageable);
     @Query("SELECT f FROM FaqEntity f WHERE f.id = :id")
     FaqEntity fetchById(@Param("id") Long id);
-    @Query("SELECT f.id, f.question, f.answer, COUNT(DISTINCT h.user.id) "
-            + "FROM FaqEntity f "
-            + "LEFT JOIN f.histories h "
-            + "GROUP BY f.id, f.question, f.answer "
-            + "ORDER BY COUNT(DISTINCT h.user.id) DESC")
-    List<Object[]> findMostPopularQuestions();
-
-
 
 }

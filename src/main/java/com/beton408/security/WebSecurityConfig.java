@@ -61,6 +61,7 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET,"/user/get/**").hasAnyAuthority("STUDENT","ADMIN","LECTURER")
                 .requestMatchers("/user/**").hasAnyAuthority("STUDENT","ADMIN")
                 .requestMatchers("/feedback/**").hasAnyAuthority("STUDENT","ADMIN")
+                .requestMatchers("/activities/**").hasAnyAuthority("LECTURER","ADMIN")
                 .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
                 .anyRequest()
                 .authenticated()

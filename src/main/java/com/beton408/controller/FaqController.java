@@ -64,9 +64,6 @@ public class FaqController {
         }
     }
     @PostMapping("/create")
-//    public FaqEntity createFaq(@RequestBody FaqEntity faq) {
-//        return faqRepository.save(faq);
-//    }
     public ResponseEntity<?> createFaq(@RequestBody FaqEntity faq) {
         if(faqRepository.findByQuestion(faq.getQuestion()) != null){
             return new ResponseEntity(new MessageResponse("Question already exists"), HttpStatus.CONFLICT);
@@ -78,17 +75,6 @@ public class FaqController {
     }
 
     @GetMapping("/get/all")
-
-//    public Page<FaqEntity> getAllFaqs(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size,
-//            @RequestParam(defaultValue = "id") String sortBy,
-//            @RequestParam(defaultValue = "ASC") String sortDir
-//    ) {
-//        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
-//        Pageable paging = PageRequest.of(page, size, sort);
-//        return faqRepository.findAll(paging);
-//    }
     public Page<FaqEntity> getAllFaqs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -138,9 +124,4 @@ public class FaqController {
 
         return ResponseEntity.ok().build();
     }
-    @GetMapping("/popular-questions")
-    public List<Object[]> getPopularQuestions() {
-        return faqRepository.findMostPopularQuestions();
-    }
-
 }

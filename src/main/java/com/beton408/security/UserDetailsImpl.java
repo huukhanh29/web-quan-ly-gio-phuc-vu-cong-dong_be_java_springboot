@@ -23,6 +23,8 @@ public class UserDetailsImpl implements UserDetails {
     private Date dateOfBirth;
     private String phone;
     private String avatar;
+    private String address;
+    private String gender;
     private int status;
     @JsonIgnore
     private String password;
@@ -30,7 +32,9 @@ public class UserDetailsImpl implements UserDetails {
     private LocalDateTime createdAt;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String username, String name, String email, Date dateOfBirth, String phone, String avatar, int status, String password, LocalDateTime updatedAt,
+    public UserDetailsImpl(Long id, String username, String name, String email, Date dateOfBirth,
+                           String phone, String avatar, int status, String password,
+                           String gender, String address, LocalDateTime updatedAt,
                            LocalDateTime createdAt, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
@@ -41,6 +45,8 @@ public class UserDetailsImpl implements UserDetails {
         this.avatar = avatar;
         this.status = status;
         this.password = password;
+        this.gender = gender;
+        this.address = address;
         this.updatedAt = updatedAt;
         this.createdAt = createdAt;
         this.authorities = authorities;
@@ -51,7 +57,7 @@ public class UserDetailsImpl implements UserDetails {
         authorities.add(new SimpleGrantedAuthority(user.getRole().toUpperCase()));
         return new UserDetailsImpl(user.getId(), user.getUsername(), user.getName(), user.getEmail(),
                 user.getDateOfBirth(), user.getPhone(),user.getAvatar(), user.getStatus(),
-                 user.getPassword(), user.getUpdatedAt(), user.getCreatedAt(), authorities);
+                 user.getPassword(), user.getGender(), user.getAddress(), user.getUpdatedAt(), user.getCreatedAt(), authorities);
         //return new UserDetailsImpl(user.getId(), user.getUsername(), user.getPassword(), new ArrayList<GrantedAuthority>());
     }
 
@@ -61,6 +67,22 @@ public class UserDetailsImpl implements UserDetails {
 
     public String getName() {
         return name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
     public LocalDateTime getUpdatedAt() {

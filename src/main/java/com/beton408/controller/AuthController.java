@@ -31,7 +31,8 @@ public class AuthController {
     UserDetailsServiceImpl userService;
     @Autowired
     JwtUtils jwtUtils;
-
+    @Autowired
+    PasswordEncoder passwordEncoder;
     @PostMapping(value = "/signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequest loginModel){
         UserEntity user;
@@ -45,6 +46,9 @@ public class AuthController {
         }
         if (user.getStatus() == 0) {
             return new ResponseEntity<>(new MessageResponse("ACCOUNT HAS BEEN BLOCKED"), HttpStatus.BAD_REQUEST);
+        }
+        if (!passwordEncoder.matches(loginModel.getPassword(), user.getPassword())) {
+            return new ResponseEntity<>(new MessageResponse("INVALID PASSWORD"), HttpStatus.BAD_REQUEST);
         }
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), loginModel.getPassword()));
@@ -65,8 +69,10 @@ public class AuthController {
             return new ResponseEntity(new MessageResponse("ERROR: USERNAME WAS USED"), HttpStatus.BAD_REQUEST);
         }
         // Create a new user entity
-        UserEntity user = new UserEntity(registerModel.getUsername(),registerModel.getEmail(), registerModel.getName(), encoder.encode(registerModel.getPassword()),
-                registerModel.getRole(), registerModel.getAvatar(), registerModel.getStatus());
+        UserEntity user = new UserEntity(registerModel.getUsername(),registerModel.getEmail(),
+                registerModel.getName(), encoder.encode(registerModel.getPassword()),
+                registerModel.getRole(), registerModel.getAvatar(),registerModel.getGender(),
+                registerModel.getAddress(), registerModel.getStatus());
         // Add the new user to the database
         userService.addUser(user);
 
