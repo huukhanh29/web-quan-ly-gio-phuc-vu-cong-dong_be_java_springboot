@@ -65,31 +65,6 @@ public class FeedbackController {
 
     //tạo Dto để lấy dữ liệu
     @GetMapping("/get/all")
-//    public Page<FeedbackDto> getAllFeedbacks(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size,
-//            @RequestParam(defaultValue = "id") String sortBy,
-//            @RequestParam(defaultValue = "ASC") String sortDir,
-//            @RequestParam(required = false, defaultValue = "") String searchTerm
-//    ) {
-//        Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
-//        Pageable paging = PageRequest.of(page, size, sort);
-//
-//        Specification<FeedbackEntity> spec = Specification.where(null);
-//
-//        if (!searchTerm.isEmpty()) {
-//            spec = spec.and((root, criteriaQuery, criteriaBuilder) -> {
-//                String pattern = "%" + searchTerm + "%";
-//                return criteriaBuilder.or(
-//                        criteriaBuilder.like(root.get("content"), pattern)
-//                );
-//            });
-//        }
-//
-//        Page<FeedbackEntity> feedbacks = feedbackRepository.findAll(spec, paging);
-//
-//        return feedbacks.map(FeedbackDto::fromEntity);
-//    }
     public Page<FeedbackDto> getAllFeedbacks(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -151,10 +126,5 @@ public class FeedbackController {
         }
 
     }
-//    public ResponseEntity<?> repFeedback(@RequestBody FeedbackRequest feedbackRequest) {
-//
-//        faqRepository.save(faq);
-//        return new ResponseEntity(faq, HttpStatus.OK);
-//    }
 }
 

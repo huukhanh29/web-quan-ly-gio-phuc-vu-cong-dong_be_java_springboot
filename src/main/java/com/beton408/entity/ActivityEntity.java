@@ -5,11 +5,12 @@ import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "activity")
 public class ActivityEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,7 +38,9 @@ public class ActivityEntity {
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -54,9 +57,7 @@ public class ActivityEntity {
         this.updatedAt = updatedAt;
     }
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+
 
     public ActivityEntity(Long id, ActivityType activityType, String name, String location, String description, LocalDateTime startTime, LocalDateTime endTime, int accumulatedTime, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
@@ -81,15 +82,6 @@ public class ActivityEntity {
 
     @Formula("(CASE WHEN start_time > now() THEN 'Sắp diễn ra' WHEN end_time > now() THEN 'Đang diễn ra' ELSE 'Đã kết thúc' END)")
     private String status;
-    public String calculateStatus() {
-        if (startTime.isAfter(LocalDateTime.now())) {
-            return "Sắp diễn ra";
-        } else if (endTime.isAfter(LocalDateTime.now())) {
-            return "Đang diễn ra";
-        } else {
-            return "Đã kết thúc";
-        }
-    }
 
     public String getStatus() {
         return status;

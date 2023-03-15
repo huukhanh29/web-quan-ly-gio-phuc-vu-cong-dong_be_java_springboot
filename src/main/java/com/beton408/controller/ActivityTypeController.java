@@ -22,4 +22,5 @@ public class ActivityTypeController {
         List<ActivityType> activityTypes = activityTypeRepository.findAll();
         return ResponseEntity.ok(activityTypes);
     }
+
 }

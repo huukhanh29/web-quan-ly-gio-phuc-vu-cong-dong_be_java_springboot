@@ -1,5 +1,9 @@
 package com.beton408.entity;
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+
 @Entity
 @Table(name = "user_activity")
 public class UserActivity {
@@ -60,7 +64,11 @@ public class UserActivity {
         this.activity = activity;
         this.status = status;
     }
-
+    public void updateStatus(String status) {
+        if (status != null) {
+            this.status = status;
+        }
+    }
     public UserActivity(Long id) {
         this.id = id;
     }

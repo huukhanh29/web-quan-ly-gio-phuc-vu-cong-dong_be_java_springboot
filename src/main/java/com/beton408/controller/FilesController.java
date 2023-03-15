@@ -52,7 +52,7 @@ public class FilesController {
         user.setAvatar(randomFileName);
         // Lấy đường dẫn file cũ
 
-        if (oldFile != null && oldFile != "User.png") {
+        if (oldFile != null && !oldFile.equals("User.png")) {
             storageService.delete(oldFile);
         }
         String message = "";

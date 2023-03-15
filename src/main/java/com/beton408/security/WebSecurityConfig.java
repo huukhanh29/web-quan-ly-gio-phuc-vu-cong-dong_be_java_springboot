@@ -59,7 +59,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/files/**").permitAll()
                 .requestMatchers("/faq/**").hasAnyAuthority("STUDENT","ADMIN")
                 .requestMatchers(HttpMethod.GET,"/user/get/**").hasAnyAuthority("STUDENT","ADMIN","LECTURER")
-                .requestMatchers("/user/**").hasAnyAuthority("STUDENT","ADMIN")
+                .requestMatchers("/user/**").hasAnyAuthority("STUDENT","ADMIN","LECTURER")
                 .requestMatchers("/feedback/**").hasAnyAuthority("STUDENT","ADMIN")
                 .requestMatchers("/activities/**").hasAnyAuthority("LECTURER","ADMIN")
                 .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
