@@ -20,6 +20,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.Year;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -80,7 +81,7 @@ public class UserActivityController {
         return userActivityRepository.findAll(spec, paging);
     }
 
-//    @PostMapping("/update/status/{id}")
+    //    @PostMapping("/update/status/{id}")
 //    public ResponseEntity<?> updateStatus(@RequestBody ActivityOfUser activityOfUser,
 //                                          @PathVariable("id") Long id) {
 //        UserActivity userActivity = userActivityRepository.findById(id)
@@ -116,39 +117,40 @@ public class UserActivityController {
 //            return new ResponseEntity(new MessageResponse("ERROR"), HttpStatus.BAD_REQUEST);
 //        }
 //    }
-@PostMapping("/update/status/{id}")
-public ResponseEntity<?> updateStatus(@RequestBody ActivityOfUser activityOfUser,
-                                      @PathVariable("id") Long id) {
-    UserActivity userActivity = userActivityRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id=" + id));
-    UserEntity user = userActivity.getUser();
-    ActivityEntity activity = userActivity.getActivity();
-    if(activity.getStatus().equals("Sắp diễn ra") && activityOfUser.getStatus().equals("Chờ xác nhận")){
-        userActivity.updateStatus(activityOfUser.getStatus());
-        userActivityRepository.save(userActivity);
-        return new ResponseEntity<>(userActivity, HttpStatus.OK);
-    }
-    Year currentYear = Year.now();
-    int year = currentYear.getValue();
-    String yearString = String.valueOf(year);
-    if(activity.getStatus().equals("Đã kết thúc") && activityOfUser.getStatus().equals("Đã xác nhận")){
-        UserAccumulatedHours userAccumulatedHours = hoursRepository.findByUserIdAndAcademicYear(user.getId(),yearString);
-
-        if(userAccumulatedHours!= null){
-            userAccumulatedHours.setTotalHours(userAccumulatedHours.getTotalHours() +
-                    userActivity.getActivity().getAccumulatedTime());
-            hoursRepository.save(userAccumulatedHours);
-        }else{
-            UserAccumulatedHours userAccumulatedHours1 = new UserAccumulatedHours();
-            userAccumulatedHours1.setTotalHours(userActivity.getActivity().getAccumulatedTime());
-            userAccumulatedHours1.setAcademicYear(yearString);
-            userAccumulatedHours1.setUser(user);
-            hoursRepository.save(userAccumulatedHours1);
+    @PostMapping("/update/status/{id}")
+    public ResponseEntity<?> updateStatus(@RequestBody ActivityOfUser activityOfUser,
+                                          @PathVariable("id") Long id) {
+        UserActivity userActivity = userActivityRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id=" + id));
+        UserEntity user = userActivity.getUser();
+        ActivityEntity activity = userActivity.getActivity();
+        if (activity.getStatus().equals("Sắp diễn ra") && activityOfUser.getStatus().equals("Chờ xác nhận")) {
+            userActivity.updateStatus(activityOfUser.getStatus());
+            userActivityRepository.save(userActivity);
+            return new ResponseEntity<>(userActivity, HttpStatus.OK);
         }
-        userActivity.updateStatus(activityOfUser.getStatus());
-        userActivityRepository.save(userActivity);
-        return new ResponseEntity<>(userActivity, HttpStatus.OK);
+        Year currentYear = Year.now();
+        int year = currentYear.getValue();
+        String yearString = String.valueOf(year);
+        if (activity.getStatus().equals("Đã kết thúc") && activityOfUser.getStatus().equals("Đã xác nhận")) {
+            UserAccumulatedHours userAccumulatedHours = hoursRepository.findByUserIdAndAcademicYear(user.getId(), yearString);
+
+            if (userAccumulatedHours != null) {
+                userAccumulatedHours.setTotalHours(userAccumulatedHours.getTotalHours() +
+                        userActivity.getActivity().getAccumulatedTime());
+                hoursRepository.save(userAccumulatedHours);
+            } else {
+                UserAccumulatedHours userAccumulatedHours1 = new UserAccumulatedHours();
+                userAccumulatedHours1.setTotalHours(userActivity.getActivity().getAccumulatedTime());
+                userAccumulatedHours1.setAcademicYear(yearString);
+                userAccumulatedHours1.setUser(user);
+                hoursRepository.save(userAccumulatedHours1);
+            }
+            userActivity.updateStatus(activityOfUser.getStatus());
+            userActivityRepository.save(userActivity);
+            return new ResponseEntity<>(userActivity, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Invalid status update", HttpStatus.BAD_REQUEST);
     }
-    return new ResponseEntity<>("Invalid status update", HttpStatus.BAD_REQUEST);
-}
+
 }

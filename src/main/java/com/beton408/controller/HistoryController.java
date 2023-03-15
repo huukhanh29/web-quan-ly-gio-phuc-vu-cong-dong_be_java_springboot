@@ -15,8 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Month;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -92,20 +95,45 @@ public class HistoryController {
 //
 //        return ResponseEntity.ok().body(chartData);
 //    }
+//    @GetMapping("/chart")
+//    public ResponseEntity<Map<String, Object>> getChart() {
+//        List<HistoryEntity> historyEntities = historyRepository.findAll();
+//        Map<YearMonth, Long> groupedByMonth = historyEntities.stream()
+//                .collect(Collectors.groupingBy(
+//                        historyEntity -> YearMonth.from(historyEntity.getCreatedAt()),
+//                        Collectors.counting()));
+//
+//        List<String> labels = groupedByMonth.keySet().stream()
+//                .sorted()
+//                .map(yearMonth -> yearMonth.format(DateTimeFormatter.ofPattern("MMMM")))
+//                .collect(Collectors.toList());
+//
+//        List<Long> data = groupedByMonth.values().stream().collect(Collectors.toList());
+//
+//        Map<String, Object> chartData = new HashMap<>();
+//        chartData.put("labels", labels);
+//        chartData.put("data", data);
+//
+//        return ResponseEntity.ok().body(chartData);
+//    }
     @GetMapping("/chart")
-    public ResponseEntity<Map<String, Object>> getChart() {
-        List<HistoryEntity> historyEntities = historyRepository.findAll();
-        Map<YearMonth, Long> groupedByMonth = historyEntities.stream()
+    public ResponseEntity<Map<String, Object>> getChart(@RequestParam("year") int year) {
+        LocalDate startOfYear = LocalDate.of(year, 1, 1);
+        LocalDate endOfYear = LocalDate.of(year, 12, 31);
+        List<HistoryEntity> historyEntities = historyRepository
+                .findByCreatedAtBetween(startOfYear.atStartOfDay(), endOfYear.atTime(LocalTime.MAX));
+        Map<Month, Long> groupedByMonth = historyEntities.stream()
                 .collect(Collectors.groupingBy(
-                        historyEntity -> YearMonth.from(historyEntity.getCreatedAt()),
+                        historyEntity -> historyEntity.getCreatedAt().getMonth(),
                         Collectors.counting()));
 
-        List<String> labels = groupedByMonth.keySet().stream()
-                .sorted()
-                .map(yearMonth -> yearMonth.format(DateTimeFormatter.ofPattern("MMMM")))
+        List<String> labels = Arrays.stream(Month.values())
+                .map(month -> month.getDisplayName(TextStyle.FULL_STANDALONE, Locale.ENGLISH))
                 .collect(Collectors.toList());
 
-        List<Long> data = groupedByMonth.values().stream().collect(Collectors.toList());
+        List<Long> data = Arrays.stream(Month.values())
+                .map(month -> groupedByMonth.getOrDefault(month, 0L))
+                .collect(Collectors.toList());
 
         Map<String, Object> chartData = new HashMap<>();
         chartData.put("labels", labels);
@@ -113,5 +141,11 @@ public class HistoryController {
 
         return ResponseEntity.ok().body(chartData);
     }
+    @GetMapping("/chat/years")
+    public ResponseEntity<List<Integer>> getYears() {
+        List<Integer> years = historyRepository.findDistinctYear();
+        return ResponseEntity.ok().body(years);
+    }
+
 }
 

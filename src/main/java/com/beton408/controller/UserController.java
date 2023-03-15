@@ -1,9 +1,12 @@
 package com.beton408.controller;
 
+import com.beton408.entity.ActivityType;
 import com.beton408.entity.FaqEntity;
+import com.beton408.entity.UserAccumulatedHours;
 import com.beton408.entity.UserEntity;
 import com.beton408.exception.ResourceNotFoundException;
 import com.beton408.model.*;
+import com.beton408.repository.UserAccumulatedHoursRepository;
 import com.beton408.repository.UserRepository;
 import com.beton408.security.UserDetailsImpl;
 import com.beton408.security.UserDetailsServiceImpl;
@@ -40,6 +43,8 @@ public class UserController {
     private UserRepository userRepository;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserAccumulatedHoursRepository userAccumulatedHoursRepository;
 
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getOne(@PathVariable Long id) {
@@ -178,7 +183,10 @@ public class UserController {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority()).collect(Collectors.toList());
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), roles.get(0), userDetails.getUsername(), userDetails.getName(), userDetails.getEmail()));
-
     }
-
+    @GetMapping("/get/academic-year")
+    public ResponseEntity<?> getAllActivityTypes() {
+        List<UserAccumulatedHours> userAccumulatedHours = userAccumulatedHoursRepository.findAll();
+        return ResponseEntity.ok(userAccumulatedHours);
+    }
 }

@@ -36,18 +36,21 @@ public class JobController {
         List<JobTitleEntity> activityTypes = jobRepository.findAll();
         return ResponseEntity.ok(activityTypes);
     }
-    @GetMapping("/chart-data/{userId}")
-    public Map<String, Integer> getChartData(@PathVariable Long userId) {
-        Year currentYear = Year.now();
-        int year = currentYear.getValue();
-        String yearString = String.valueOf(year);
-        UserAccumulatedHours userHours = hoursRepository.findByUserIdAndAcademicYear(userId, yearString);
+    @GetMapping("/chart-data/{userId}/{acdemic}")
+    public Map<String, Integer> getChartData(@PathVariable Long userId,
+                                             @PathVariable String acdemic) {
+        UserAccumulatedHours userHours = hoursRepository.findByUserIdAndAcademicYear(userId, acdemic);
         JobTitleEntity jobTitle = jobRepository.findByName(userHours.getUser().getJobTitle().getName());
         int requiredHours = jobTitle.getRequiredHours();
         int totalHours = userHours.getTotalHours();
+        int missHours =requiredHours-totalHours;
+        if(missHours<0){
+            missHours =0;
+        }
         Map<String, Integer> chartData = new HashMap<>();
-        chartData.put("requiredHours", requiredHours);
+        chartData.put("missHours", missHours);
         chartData.put("totalHours", totalHours);
+        chartData.put("requiredHours", requiredHours);
 
         return chartData;
     }
