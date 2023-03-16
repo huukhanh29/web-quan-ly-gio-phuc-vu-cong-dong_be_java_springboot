@@ -74,48 +74,6 @@ public class HistoryController {
         return historyRepository.save(userFaq);
     }
 
-    //    @GetMapping("/chart")
-//    public ResponseEntity<Map<String, Object>> getChart() {
-//        List<HistoryEntity> historyEntities = historyRepository.findAll();
-//        Map<LocalDate, Long> groupedByDate = historyEntities.stream()
-//                .collect(Collectors.groupingBy(
-//                        historyEntity -> historyEntity.getCreatedAt().toLocalDate(),
-//                        Collectors.counting()));
-//
-//        List<String> labels = groupedByDate.keySet().stream()
-//                .sorted()
-//                .map(date -> date.format(DateTimeFormatter.ISO_LOCAL_DATE))
-//                .collect(Collectors.toList());
-//
-//        List<Long> data = groupedByDate.values().stream().collect(Collectors.toList());
-//
-//        Map<String, Object> chartData = new HashMap<>();
-//        chartData.put("labels", labels);
-//        chartData.put("data", data);
-//
-//        return ResponseEntity.ok().body(chartData);
-//    }
-//    @GetMapping("/chart")
-//    public ResponseEntity<Map<String, Object>> getChart() {
-//        List<HistoryEntity> historyEntities = historyRepository.findAll();
-//        Map<YearMonth, Long> groupedByMonth = historyEntities.stream()
-//                .collect(Collectors.groupingBy(
-//                        historyEntity -> YearMonth.from(historyEntity.getCreatedAt()),
-//                        Collectors.counting()));
-//
-//        List<String> labels = groupedByMonth.keySet().stream()
-//                .sorted()
-//                .map(yearMonth -> yearMonth.format(DateTimeFormatter.ofPattern("MMMM")))
-//                .collect(Collectors.toList());
-//
-//        List<Long> data = groupedByMonth.values().stream().collect(Collectors.toList());
-//
-//        Map<String, Object> chartData = new HashMap<>();
-//        chartData.put("labels", labels);
-//        chartData.put("data", data);
-//
-//        return ResponseEntity.ok().body(chartData);
-//    }
     @GetMapping("/chart")
     public ResponseEntity<Map<String, Object>> getChart(@RequestParam("year") int year) {
         LocalDate startOfYear = LocalDate.of(year, 1, 1);
@@ -146,6 +104,5 @@ public class HistoryController {
         List<Integer> years = historyRepository.findDistinctYear();
         return ResponseEntity.ok().body(years);
     }
-
 }
 

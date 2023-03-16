@@ -21,9 +21,15 @@ public interface UserActivityRepository extends JpaRepository<UserActivity, Long
     List<UserActivity> findByUserId(@Param("userId") Long userId);
     @Query("SELECT ua FROM UserActivity ua WHERE ua.activity.id = :activityId")
     List<UserActivity> findByActivityId(@Param("activityId") Long activityId);
+    //cần kiểm tra
     @Query("SELECT ua FROM UserActivity ua WHERE ua.activity.id = :activityId AND ua.user.id = :userId")
-    List<UserActivity> findByActivityAndUserId(@Param("activityId") Long activityId,
+    UserActivity findByActivityAndUserId(@Param("activityId") Long activityId,
                                                @Param("userId") Long userId);
     @Query("SELECT ua FROM UserActivity ua WHERE ua.status = :state")
     List<UserActivity> activityManager(@Param("state") String state);
+
+    @Query("SELECT DISTINCT h.activity.name FROM UserActivity h ORDER BY h.activity.name ASC")
+    List<String> findDistinctActivity();
+    @Query("SELECT COUNT(ua) FROM UserActivity ua WHERE ua.user.id = :userId AND ua.status = 'Đã xác nhận'")
+    int countConfirmedActivitiesByUser(@Param("userId") Long userId);
 }

@@ -1,12 +1,9 @@
 package com.beton408.controller;
 
-import com.beton408.entity.ActivityEntity;
-import com.beton408.entity.UserActivity;
-import com.beton408.entity.UserEntity;
+import com.beton408.entity.*;
 import com.beton408.exception.ResourceNotFoundException;
 import com.beton408.model.ActivityOfUser;
-import com.beton408.model.MessageResponse;
-import com.beton408.entity.UserAccumulatedHours;
+import com.beton408.model.UserActvityInfo;
 import com.beton408.repository.ActivityTypeRepository;
 import com.beton408.repository.UserAccumulatedHoursRepository;
 import com.beton408.repository.UserActivityRepository;
@@ -40,6 +37,7 @@ public class UserActivityController {
     @Autowired
     private UserRepository userRepository;
 
+
     @GetMapping("/get/all")
     public Page<UserActivity> getAllFaqs(
             @RequestParam(defaultValue = "0") int page,
@@ -49,11 +47,12 @@ public class UserActivityController {
             @RequestParam(required = false, defaultValue = "") String searchTerm,
             @RequestParam(required = false, defaultValue = "") String status,
             @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime
+            @RequestParam(required = false) String endTime,
+            @RequestParam(required = false, defaultValue = "") String year,
+            @RequestParam(required = false, defaultValue = "") String condition
     ) {
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
         Pageable paging = PageRequest.of(page, size, sort);
-
 
         Specification<UserActivity> spec = Specification.where(null);
         if (!searchTerm.isEmpty()) {
@@ -68,6 +67,9 @@ public class UserActivityController {
         if (!status.isEmpty()) {
             spec = spec.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(root.get("activity").get("status"), status));
         }
+        if (!condition.isEmpty()) {
+            spec = spec.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), condition));
+        }
         if (startTime != null) {
             LocalDateTime startTimes = LocalDate.parse(startTime).atStartOfDay();
             spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get("activity").get("startTime"), startTimes));
@@ -77,46 +79,16 @@ public class UserActivityController {
             LocalDateTime endTimes = date.atTime(23, 59, 59);
             spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get("activity").get("endTime"), endTimes));
         }
-
+        if (!year.isEmpty()) {
+            spec = spec.and((root, query, criteriaBuilder) -> {
+                LocalDateTime startOfYear = LocalDateTime.of(Integer.parseInt(year), 1, 1, 0, 0, 0);
+                LocalDateTime endOfYear = LocalDateTime.of(Integer.parseInt(year), 12, 31, 23, 59, 59);
+                return criteriaBuilder.between(root.get("activity").get("startTime"), startOfYear, endOfYear);
+            });
+        }
         return userActivityRepository.findAll(spec, paging);
     }
 
-    //    @PostMapping("/update/status/{id}")
-//    public ResponseEntity<?> updateStatus(@RequestBody ActivityOfUser activityOfUser,
-//                                          @PathVariable("id") Long id) {
-//        UserActivity userActivity = userActivityRepository.findById(id)
-//                .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id=" + id));
-//        UserEntity user = userRepository.findById(userActivity.getUser().getId())
-//                .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id=" + id));
-//        ActivityEntity activity = userActivity.getActivity();
-//        if(activity.getStatus().equals("Sắp diễn ra") && activityOfUser.getStatus().equals("Chờ xác nhận")){
-//            userActivity.updateStatus(activityOfUser.getStatus());
-//            userActivityRepository.save(userActivity);
-//            return new ResponseEntity<>(userActivity, HttpStatus.OK);
-//        }
-//        if(activity.getStatus().equals("Đã kết thúc") && activityOfUser.getStatus().equals("Đã xác nhận")){
-//            UserAccumulatedHours userAccumulatedHours = hoursRepository.findByUserId(user.getId());
-//            Year currentYear = Year.now();
-//            int year = currentYear.getValue();
-//            String yearString = String.valueOf(year);
-//            if(userAccumulatedHours!= null && userAccumulatedHours.getAcademicYear().equals(yearString)){
-//                userAccumulatedHours.setTotalHours(userAccumulatedHours.getTotalHours() +
-//                        userActivity.getActivity().getAccumulatedTime());
-//                hoursRepository.save(userAccumulatedHours);
-//            }else{
-//                UserAccumulatedHours userAccumulatedHours1 = new UserAccumulatedHours();
-//                userAccumulatedHours1.setTotalHours(userActivity.getActivity().getAccumulatedTime());
-//                userAccumulatedHours1.setAcademicYear(yearString);
-//                userAccumulatedHours1.setUser(user);
-//                hoursRepository.save(userAccumulatedHours1);
-//            }
-//            userActivity.updateStatus(activityOfUser.getStatus());
-//            userActivityRepository.save(userActivity);
-//            return new ResponseEntity<>(userActivity, HttpStatus.OK);
-//        }else{
-//            return new ResponseEntity(new MessageResponse("ERROR"), HttpStatus.BAD_REQUEST);
-//        }
-//    }
     @PostMapping("/update/status/{id}")
     public ResponseEntity<?> updateStatus(@RequestBody ActivityOfUser activityOfUser,
                                           @PathVariable("id") Long id) {
@@ -152,5 +124,44 @@ public class UserActivityController {
         }
         return new ResponseEntity<>("Invalid status update", HttpStatus.BAD_REQUEST);
     }
-
+    @GetMapping("/get/activity")
+    public ResponseEntity<List<String>> getYears() {
+        List<String> activity = userActivityRepository.findDistinctActivity();
+        return ResponseEntity.ok().body(activity);
+    }
+    @GetMapping("/get/user-info/{userId}")
+    public ResponseEntity<UserActvityInfo> getUserInfo(@PathVariable Long userId) {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id=" + userId));
+        int totalHours = 0;
+        Year currentYear = Year.now();
+        int year = currentYear.getValue();
+        String yearString = String.valueOf(year);
+        UserAccumulatedHours userAccumulatedHours = hoursRepository.findByUserIdAndAcademicYear(userId, yearString);
+        if(userAccumulatedHours != null){
+            totalHours = userAccumulatedHours.getTotalHours();
+        }
+        if (userEntity != null ){
+            int numActivities = userActivityRepository.countConfirmedActivitiesByUser(userId);
+            UserActvityInfo userInfoDto = new UserActvityInfo();
+            userInfoDto.setName(userEntity.getName());
+            userInfoDto.setJob(userEntity.getJobTitle().getName());
+            userInfoDto.setNumActivities(numActivities);
+            userInfoDto.setRequiredHours(userEntity.getJobTitle().getRequiredHours());
+            userInfoDto.setTotalHours(totalHours);
+            return ResponseEntity.ok(userInfoDto);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @DeleteMapping("/destroy/{userId}/{activityId}")
+    public ResponseEntity<?> destroyRegister(@PathVariable(value = "userId") Long userId,
+                                             @PathVariable(value = "activityId") Long activityId) {
+        UserActivity userActivity = userActivityRepository.findByActivityAndUserId(activityId, userId);
+        if (userActivity == null) {
+            return ResponseEntity.notFound().build();
+        }
+        userActivityRepository.delete(userActivity);
+        return ResponseEntity.ok().build();
+    }
 }

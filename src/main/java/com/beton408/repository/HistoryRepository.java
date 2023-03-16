@@ -1,5 +1,6 @@
 package com.beton408.repository;
 
+import com.beton408.entity.FeedbackEntity;
 import com.beton408.entity.HistoryEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,12 +15,17 @@ import java.util.List;
 
 
 public interface HistoryRepository extends JpaRepository<HistoryEntity, Long>, JpaSpecificationExecutor<HistoryEntity> {
-        List<HistoryEntity> findByUserId(Long userId);
-        Page<HistoryEntity> findAll(Specification<HistoryEntity> spec, Pageable pageable);
-        @Query("SELECT h FROM HistoryEntity h WHERE h.createdAt BETWEEN :startDate AND :endDate")
-        List<HistoryEntity> findByCreatedAtBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
-        @Query("SELECT DISTINCT YEAR(h.createdAt) FROM HistoryEntity h")
-        List<Integer> findDistinctYear();
+    List<HistoryEntity> findByUserId(Long userId);
 
+    Page<HistoryEntity> findAll(Specification<HistoryEntity> spec, Pageable pageable);
+
+    @Query("SELECT h FROM HistoryEntity h WHERE h.createdAt BETWEEN :startDate AND :endDate")
+    List<HistoryEntity> findByCreatedAtBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT DISTINCT YEAR(h.createdAt) FROM HistoryEntity h ORDER BY YEAR(h.createdAt) DESC")
+    List<Integer> findDistinctYear();
+
+    @Query("SELECT h FROM HistoryEntity h WHERE h.faq.id = :faqId")
+    HistoryEntity findByFaqId(@Param("faqId") Long faqId);
 }
 

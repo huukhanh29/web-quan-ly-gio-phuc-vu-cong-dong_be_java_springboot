@@ -172,8 +172,8 @@ public class ActivityController {
         UserEntity user = userRepository.findById(registerActivity.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id=" + registerActivity.getUserId()));
         UserActivity userActivity = new UserActivity();
-        List<UserActivity> checkActivity = userActivityRepository.findByActivityAndUserId(registerActivity.getActivityId(), registerActivity.getUserId());
-        if(!checkActivity.isEmpty()) {
+        UserActivity checkActivity = userActivityRepository.findByActivityAndUserId(registerActivity.getActivityId(), registerActivity.getUserId());
+        if(checkActivity != null) {
             return new ResponseEntity(new
                     MessageResponse("IS USE"),
                     HttpStatus.CONFLICT);
@@ -209,5 +209,8 @@ public class ActivityController {
 
         return ResponseEntity.ok(activityDTOs);
     }
-
+    @GetMapping("/get/years")
+    public List<Integer> getYears() {
+        return activityRepository.findYears();
+    }
 }

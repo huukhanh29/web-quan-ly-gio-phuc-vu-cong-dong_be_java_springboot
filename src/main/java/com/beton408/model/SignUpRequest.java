@@ -6,10 +6,20 @@ public class SignUpRequest {
     private final String email;
     private final String password;
     private final String gender;
+    private String job = null;
+
+    public String getJob() {
+        return job;
+    }
+
+    public void setJob(String job) {
+        this.job = job;
+    }
 
     public String getGender() {
         return gender;
     }
+
     private String address;
 
     public String getEmail() {
@@ -25,14 +35,15 @@ public class SignUpRequest {
     }
 
     public SignUpRequest(String username, String name, String email,
-                         String password, String gender, String address, String role) {
+                         String password, String gender, String address, String role, String job) {
         this.username = username;
         this.name = name;
         this.email = email;
         this.password = password;
         this.gender = gender;
-        this.address =address;
+        this.address = address;
         this.role = role;
+        this.job = job;
     }
 
     public String getName() {

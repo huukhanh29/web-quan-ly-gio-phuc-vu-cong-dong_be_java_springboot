@@ -17,4 +17,7 @@ import java.util.List;
 public interface ActivityRepository extends JpaRepository<ActivityEntity, Long>, JpaSpecificationExecutor<ActivityEntity> {
     Page<ActivityEntity> findAll(Specification<ActivityEntity> spec, Pageable paging);
     List<ActivityEntity> findByIdIn(List<Long> ids);
+    @Query("SELECT DISTINCT YEAR(a.startTime) FROM ActivityEntity a ORDER BY YEAR(a.startTime) DESC")
+    List<Integer> findYears();
+
 }

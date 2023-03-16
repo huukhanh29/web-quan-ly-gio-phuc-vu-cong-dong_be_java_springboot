@@ -19,25 +19,12 @@ public class FaqEntity {
     private String question;
     @Column(name= "answer")
     private String answer;
-    @OneToOne(mappedBy = "faq", fetch = FetchType.LAZY)
-    private FeedbackEntity feedback;
-    @OneToMany(mappedBy = "faq", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HistoryEntity> histories = new ArrayList<>();
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    public FeedbackEntity getFeedback() {
-        return feedback;
-    }
-
-    public void setFeedback(FeedbackEntity feedback) {
-        this.feedback = feedback;
-    }
-
 
     public Long getId() {
         return id;

@@ -52,9 +52,14 @@ public class UserController {
         if (user.getId() == null) {
             return new ResponseEntity<>(new MessageResponse("NOT FOUND"), HttpStatus.NOT_FOUND);
         }
+        String job = "";
+        if(user.getJobTitle()!=null){
+            job = user.getJobTitle().getName();
+        }
         return new ResponseEntity<>(new UserInfo(user.getId(), user.getUsername(),
                 user.getName(), user.getEmail(), user.getRole(), user.getDateOfBirth(),
-                user.getPhone(),user.getGender(), user.getAddress(), user.getAvatar(), user.getStatus()), HttpStatus.OK);
+                user.getPhone(),user.getGender(), user.getAddress(), user.getAvatar(),
+                user.getStatus(), job), HttpStatus.OK);
     }
 
     @GetMapping("/get/all")
@@ -184,9 +189,10 @@ public class UserController {
                 .map(item -> item.getAuthority()).collect(Collectors.toList());
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), roles.get(0), userDetails.getUsername(), userDetails.getName(), userDetails.getEmail()));
     }
-    @GetMapping("/get/academic-year")
-    public ResponseEntity<?> getAllActivityTypes() {
-        List<UserAccumulatedHours> userAccumulatedHours = userAccumulatedHoursRepository.findAll();
-        return ResponseEntity.ok(userAccumulatedHours);
+    @GetMapping("/get/academic-year/{userId}")
+    public ResponseEntity<?> getAcademicYearsByUser(@PathVariable Long userId) {
+        List<String> academicYears = userAccumulatedHoursRepository.findDistinctAcademicYearsByUser(userId);
+        return ResponseEntity.ok(academicYears);
     }
+
 }

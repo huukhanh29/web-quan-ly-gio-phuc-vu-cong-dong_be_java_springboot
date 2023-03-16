@@ -2,10 +2,14 @@ package com.beton408.controller;
 
 
 import com.beton408.entity.FaqEntity;
+import com.beton408.entity.FeedbackEntity;
+import com.beton408.entity.HistoryEntity;
 import com.beton408.exception.ResourceNotFoundException;
 import com.beton408.model.MessageResponse;
 import com.beton408.model.QuestionRequest;
 import com.beton408.repository.FaqRepository;
+import com.beton408.repository.FeedbackRepository;
+import com.beton408.repository.HistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
@@ -27,6 +31,10 @@ import static com.beton408.security.Helpers.createSlug;
 public class FaqController {
     @Autowired
     private FaqRepository faqRepository;
+    @Autowired
+    private FeedbackRepository feedbackRepository;
+    @Autowired
+    private HistoryRepository historyRepository;
 
     @PostMapping("/question")
     public ResponseEntity<?> getAnswer(@RequestBody QuestionRequest request) {
@@ -117,9 +125,15 @@ public class FaqController {
     }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteFaq(@PathVariable(value = "id") Long faqId) {
+
         FaqEntity faq = faqRepository.findById(faqId)
                 .orElseThrow(() -> new ResourceNotFoundException("Faq", "id", faqId));
 
+        FeedbackEntity feedback = feedbackRepository.findByFaqId(faqId);
+        HistoryEntity historyEntity = historyRepository.findByFaqId(faqId);
+        if(feedback!= null || historyEntity != null){
+            return new ResponseEntity(new MessageResponse("IS USE"), HttpStatus.BAD_REQUEST);
+        }
         faqRepository.delete(faq);
 
         return ResponseEntity.ok().build();

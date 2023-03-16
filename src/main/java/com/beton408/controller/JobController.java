@@ -39,10 +39,16 @@ public class JobController {
     @GetMapping("/chart-data/{userId}/{acdemic}")
     public Map<String, Integer> getChartData(@PathVariable Long userId,
                                              @PathVariable String acdemic) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("UserEntity", "id", userId));
         UserAccumulatedHours userHours = hoursRepository.findByUserIdAndAcademicYear(userId, acdemic);
-        JobTitleEntity jobTitle = jobRepository.findByName(userHours.getUser().getJobTitle().getName());
+        int totalHours = 0;
+        if(userHours != null){
+            totalHours = userHours.getTotalHours();
+        }
+        JobTitleEntity jobTitle = jobRepository.findByName(user.getJobTitle().getName());
         int requiredHours = jobTitle.getRequiredHours();
-        int totalHours = userHours.getTotalHours();
+
         int missHours =requiredHours-totalHours;
         if(missHours<0){
             missHours =0;

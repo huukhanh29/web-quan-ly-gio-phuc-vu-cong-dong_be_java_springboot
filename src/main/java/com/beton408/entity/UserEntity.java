@@ -97,7 +97,7 @@ public class UserEntity {
 
     public UserEntity(String username, String email, String name,
                       String password, String role, String avatar,
-                      String gender, String address, int status){
+                      String gender, int status){
         this.username = username;
         this.email = email;
         this.name = name;
@@ -105,7 +105,6 @@ public class UserEntity {
         this.role = role;
         this.avatar = avatar;
         this.gender = gender;
-        this.address = address;
         this.status = status;
 }
     public LocalDateTime getCreatedAt() {

@@ -9,6 +9,16 @@ public class FeedbackDto {
     private Long id;
     private String content;
     private String question;
+    private String answer;
+
+    public String getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(String answer) {
+        this.answer = answer;
+    }
+
     private String name;
 
     public String getName() {
@@ -19,10 +29,11 @@ public class FeedbackDto {
         this.name = name;
     }
 
-    public FeedbackDto(Long id, String content, String question, String name, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public FeedbackDto(Long id, String content, String question, String answer, String name, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.content = content;
         this.question = question;
+        this.answer = answer;
         this.name = name;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -71,16 +82,6 @@ public class FeedbackDto {
         this.updatedAt = updatedAt;
     }
 
-//    public static FeedbackDto fromEntity(FeedbackEntity feedbackEntity) {
-//        FaqEntity faq = feedbackEntity.getFaq();
-//        return new FeedbackDto(
-//                feedbackEntity.getId(),
-//                feedbackEntity.getContent(),
-//                faq != null ? faq.getQuestion() : null,
-//                feedbackEntity.getCreatedAt(),
-//                feedbackEntity.getUpdatedAt()
-//        );
-//    }
 public static FeedbackDto fromEntity(FeedbackEntity feedbackEntity) {
     FaqEntity faq = feedbackEntity.getFaq();
     UserEntity user = feedbackEntity.getUser();  // Thêm đoạn code này để lấy UserEntity
@@ -89,6 +90,7 @@ public static FeedbackDto fromEntity(FeedbackEntity feedbackEntity) {
             feedbackEntity.getId(),
             feedbackEntity.getContent(),
             faq != null ? faq.getQuestion() : null,
+            faq != null ? faq.getAnswer() : null,
             name,  // Thêm username vào trong FeedbackDto
             feedbackEntity.getCreatedAt(),
             feedbackEntity.getUpdatedAt()

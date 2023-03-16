@@ -11,6 +11,11 @@ public class UserInfo {
     private final Date date;
     private final int status;
     private final String gender;
+private  final String job;
+
+    public String getJob() {
+        return job;
+    }
 
     public String getGender() {
         return gender;
@@ -20,7 +25,7 @@ public class UserInfo {
                     String name, String email, String role,
                     Date date, String phone, String gender,
                     String address,
-                    String avatar, int status) {
+                    String avatar, int status, String job) {
         this.id = id;
         this.username = username;
         this.name = name;
@@ -32,6 +37,7 @@ public class UserInfo {
         this.address = address;
         this.role = role;
         this.avatar = avatar;
+        this.job = job;
     }
     public String getAddress() {
         return address;
@@ -94,6 +100,7 @@ public class UserInfo {
         this.date = null;
         this.address="";
         this.gender="";
+        this.job ="";
     }
 }
 

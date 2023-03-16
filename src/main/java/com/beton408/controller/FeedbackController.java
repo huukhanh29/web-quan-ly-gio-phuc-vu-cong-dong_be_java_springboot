@@ -98,9 +98,6 @@ public class FeedbackController {
         return feedbacks.map(FeedbackDto::fromEntity);
     }
 
-
-
-
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteFeedback(@PathVariable(value = "id") Long fId) {
         FeedbackEntity f = feedbackRepository.findById(fId)
@@ -110,7 +107,7 @@ public class FeedbackController {
 
         return ResponseEntity.ok().build();
     }
-    @PutMapping("/reply/{id}")
+    @PostMapping("/reply/{id}")
     public ResponseEntity<?> repFaq(@RequestBody FaqEntity faq,
                                     @PathVariable(value = "id") Long feedId) {
         if(faqRepository.findByQuestion(faq.getQuestion()) != null){

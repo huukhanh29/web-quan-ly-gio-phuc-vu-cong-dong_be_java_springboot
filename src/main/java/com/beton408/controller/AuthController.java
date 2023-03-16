@@ -1,7 +1,9 @@
 package com.beton408.controller;
 
+import com.beton408.entity.JobTitleEntity;
 import com.beton408.entity.UserEntity;
 import com.beton408.model.*;
+import com.beton408.repository.JobRepository;
 import com.beton408.security.UserDetailsImpl;
 import com.beton408.security.UserDetailsServiceImpl;
 import com.beton408.security.jwt.JwtUtils;
@@ -33,6 +35,9 @@ public class AuthController {
     JwtUtils jwtUtils;
     @Autowired
     PasswordEncoder passwordEncoder;
+    @Autowired
+    private JobRepository jobRepository;
+
     @PostMapping(value = "/signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequest loginModel){
         UserEntity user;
@@ -68,11 +73,17 @@ public class AuthController {
         } else if (userService.isUsernameExist(registerModel.getUsername())) {
             return new ResponseEntity(new MessageResponse("ERROR: USERNAME WAS USED"), HttpStatus.BAD_REQUEST);
         }
+
+
         // Create a new user entity
         UserEntity user = new UserEntity(registerModel.getUsername(),registerModel.getEmail(),
                 registerModel.getName(), encoder.encode(registerModel.getPassword()),
-                registerModel.getRole(), registerModel.getAvatar(),registerModel.getGender(),
-                registerModel.getAddress(), registerModel.getStatus());
+                registerModel.getRole(), registerModel.getAvatar(),
+                registerModel.getGender(), registerModel.getStatus() );
+        if(registerModel.getJob()!= null){
+            JobTitleEntity jobTitle = jobRepository.findByName(registerModel.getJob());
+            user.setJobTitle(jobTitle);
+        }
         // Add the new user to the database
         userService.addUser(user);
 
