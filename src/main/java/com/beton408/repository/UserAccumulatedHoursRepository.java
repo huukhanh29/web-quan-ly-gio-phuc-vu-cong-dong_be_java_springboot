@@ -13,4 +13,6 @@ public interface UserAccumulatedHoursRepository extends JpaRepository<UserAccumu
     UserAccumulatedHours findByUserIdAndAcademicYear(Long userId, String a);
     @Query("SELECT DISTINCT uah.academicYear FROM UserAccumulatedHours uah WHERE uah.user.id = :userId ORDER BY uah.academicYear DESC")
     List<String> findDistinctAcademicYearsByUser(@Param("userId") Long userId);
+    List<UserAccumulatedHours> findByAcademicYearAndUser_Role(String academicYear, String role);
+    UserAccumulatedHours findByAcademicYearAndUser_Id(String acdemicYear, Long userId);
 }

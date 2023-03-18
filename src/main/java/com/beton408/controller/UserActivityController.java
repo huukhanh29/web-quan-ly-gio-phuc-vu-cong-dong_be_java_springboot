@@ -4,10 +4,10 @@ import com.beton408.entity.*;
 import com.beton408.exception.ResourceNotFoundException;
 import com.beton408.model.ActivityOfUser;
 import com.beton408.model.UserActvityInfo;
-import com.beton408.repository.ActivityTypeRepository;
-import com.beton408.repository.UserAccumulatedHoursRepository;
-import com.beton408.repository.UserActivityRepository;
-import com.beton408.repository.UserRepository;
+import com.beton408.repository.*;
+import com.beton408.security.jwt.JwtUtils;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,14 +36,16 @@ public class UserActivityController {
     private UserAccumulatedHoursRepository hoursRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private NotificationRepository notificationRepository;
 
 
     @GetMapping("/get/all")
     public Page<UserActivity> getAllFaqs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDir,
+            @RequestParam(defaultValue = "activity.createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
             @RequestParam(required = false, defaultValue = "") String searchTerm,
             @RequestParam(required = false, defaultValue = "") String status,
             @RequestParam(required = false) String startTime,
@@ -89,46 +91,74 @@ public class UserActivityController {
         return userActivityRepository.findAll(spec, paging);
     }
 
+    //cập nhật trạng thái đăng ký hoạt động của người dùng
     @PostMapping("/update/status/{id}")
     public ResponseEntity<?> updateStatus(@RequestBody ActivityOfUser activityOfUser,
                                           @PathVariable("id") Long id) {
+        //tìm hoạt động đăng ký của user
         UserActivity userActivity = userActivityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Activity not found with id=" + id));
         UserEntity user = userActivity.getUser();
         ActivityEntity activity = userActivity.getActivity();
+
         if (activity.getStatus().equals("Sắp diễn ra") && activityOfUser.getStatus().equals("Chờ xác nhận")) {
             userActivity.updateStatus(activityOfUser.getStatus());
             userActivityRepository.save(userActivity);
+            //tạo thông báo duyệt
+            Notification notification =new Notification();
+            notification.setContent("Yêu cầu đăng ký tham gia hoạt động " +
+                    activity.getName()+" của bạn đã được duyệt.");
+            notification.setUser(user);
+            notification.setTitle("Duyệt đăng ký hoạt động");
+            notification.setStatus("Chưa đọc");
+            notificationRepository.save(notification);
             return new ResponseEntity<>(userActivity, HttpStatus.OK);
         }
         Year currentYear = Year.now();
         int year = currentYear.getValue();
         String yearString = String.valueOf(year);
         if (activity.getStatus().equals("Đã kết thúc") && activityOfUser.getStatus().equals("Đã xác nhận")) {
+            int totalHours =0;
             UserAccumulatedHours userAccumulatedHours = hoursRepository.findByUserIdAndAcademicYear(user.getId(), yearString);
-
             if (userAccumulatedHours != null) {
                 userAccumulatedHours.setTotalHours(userAccumulatedHours.getTotalHours() +
                         userActivity.getActivity().getAccumulatedTime());
                 hoursRepository.save(userAccumulatedHours);
+                totalHours = userAccumulatedHours.getTotalHours();
             } else {
                 UserAccumulatedHours userAccumulatedHours1 = new UserAccumulatedHours();
                 userAccumulatedHours1.setTotalHours(userActivity.getActivity().getAccumulatedTime());
                 userAccumulatedHours1.setAcademicYear(yearString);
                 userAccumulatedHours1.setUser(user);
                 hoursRepository.save(userAccumulatedHours1);
+                totalHours = userAccumulatedHours.getTotalHours();
             }
             userActivity.updateStatus(activityOfUser.getStatus());
+            //tạo thông báo xác nhận
+            int hours =  userActivity.getActivity().getAccumulatedTime();
+            Notification notification =new Notification();
+            notification.setContent("Việc tham gia hoạt động " +
+                    activity.getName()+" của bạn đã được xác nhận. Bạn đuợc cộng "+
+                    hours + " giờ vào giờ tích lũy cộng đồng. Tổng giờ hiện tại của bạn là "+
+                    totalHours+" giờ.");
+            notification.setUser(user) ;
+            notification.setTitle("Xác nhận tham gia hoạt động");
+            notification.setStatus("Chưa đọc");
+            notificationRepository.save(notification);
             userActivityRepository.save(userActivity);
             return new ResponseEntity<>(userActivity, HttpStatus.OK);
         }
         return new ResponseEntity<>("Invalid status update", HttpStatus.BAD_REQUEST);
     }
+
+    //lấy danh sách hoạt động đã được đăng ký
     @GetMapping("/get/activity")
-    public ResponseEntity<List<String>> getYears() {
+    public ResponseEntity<List<String>> getActivity() {
         List<String> activity = userActivityRepository.findDistinctActivity();
         return ResponseEntity.ok().body(activity);
     }
+
+    //lấy thông tin người dùng khi đăng ký hoạt động
     @GetMapping("/get/user-info/{userId}")
     public ResponseEntity<UserActvityInfo> getUserInfo(@PathVariable Long userId) {
         UserEntity userEntity = userRepository.findById(userId)
@@ -138,10 +168,10 @@ public class UserActivityController {
         int year = currentYear.getValue();
         String yearString = String.valueOf(year);
         UserAccumulatedHours userAccumulatedHours = hoursRepository.findByUserIdAndAcademicYear(userId, yearString);
-        if(userAccumulatedHours != null){
+        if (userAccumulatedHours != null) {
             totalHours = userAccumulatedHours.getTotalHours();
         }
-        if (userEntity != null ){
+        if (userEntity != null) {
             int numActivities = userActivityRepository.countConfirmedActivitiesByUser(userId);
             UserActvityInfo userInfoDto = new UserActvityInfo();
             userInfoDto.setName(userEntity.getName());
@@ -154,12 +184,57 @@ public class UserActivityController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    //hủy đăng ký một hoạt động
     @DeleteMapping("/destroy/{userId}/{activityId}")
     public ResponseEntity<?> destroyRegister(@PathVariable(value = "userId") Long userId,
-                                             @PathVariable(value = "activityId") Long activityId) {
+                                             @PathVariable(value = "activityId") Long activityId,
+                                             HttpServletRequest request) {
         UserActivity userActivity = userActivityRepository.findByActivityAndUserId(activityId, userId);
         if (userActivity == null) {
             return ResponseEntity.notFound().build();
+        }
+
+        //lấy ra curent user
+        String token = JwtUtils.resolveToken(request);
+        if (token == null || !JwtUtils.validateJwtToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Claims claims = JwtUtils.getClaimsFromToken(token);
+        Long currentUserId = Long.parseLong(String.valueOf(claims.get("id", Integer.class)));
+        UserEntity currentUser = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+        if(currentUser.getRole().equals("LECTURER")){
+            //tạo thông báo hủy
+            Notification notification =new Notification();
+            notification.setContent("Bạn đã hủy đăng ký tham gia hoạt động "+
+                    userActivity.getActivity().getName() +".");
+            notification.setUser(currentUser);
+            notification.setTitle("Hủy đăng ký hoạt động");
+            notification.setStatus("Chưa đọc");
+            notificationRepository.save(notification);
+        }
+        if(currentUser.getRole().equals("ADMIN")){
+            //tạo thông báo
+            if(userActivity.getStatus().equals("Chờ duyệt")){
+                Notification notification =new Notification();
+                notification.setContent("Yêu cầu đăng ký hoạt động "+
+                        userActivity.getActivity().getName() +
+                        "của bạn đã bị hủy.");
+                notification.setUser(currentUser);
+                notification.setTitle("Hủy đăng ký hoạt động");
+                notification.setStatus("Chưa đọc");
+                notificationRepository.save(notification);
+            }else if(userActivity.getStatus().equals("Chờ xác nhận")){
+                Notification notification =new Notification();
+                notification.setContent("Xác nhận tham gia hoạt động "+
+                        userActivity.getActivity().getName() +
+                        " của bạn thất bại.");
+                notification.setUser(currentUser);
+                notification.setTitle("Hủy xác nhận hoạt động");
+                notification.setStatus("Chưa đọc");
+                notificationRepository.save(notification);
+            }
+
         }
         userActivityRepository.delete(userActivity);
         return ResponseEntity.ok().build();

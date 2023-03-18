@@ -37,7 +37,7 @@ public class AuthController {
     PasswordEncoder passwordEncoder;
     @Autowired
     private JobRepository jobRepository;
-
+    //đăng nhập
     @PostMapping(value = "/signin")
     public ResponseEntity<?> signin(@RequestBody LoginRequest loginModel){
         UserEntity user;
@@ -64,7 +64,7 @@ public class AuthController {
                 .map(item -> item.getAuthority()).collect(Collectors.toList());
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), roles.get(0), userDetails.getUsername(), userDetails.getName(), userDetails.getEmail()));
     }
-
+    //đăng ký
     @PostMapping(value = "/signup")
     public ResponseEntity<?> signup(@RequestBody @NonNull SignUpRequest registerModel){
         // Check if the email or username already exists

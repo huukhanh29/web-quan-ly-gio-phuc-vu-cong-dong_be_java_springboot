@@ -10,22 +10,16 @@ import com.beton408.repository.ActivityRepository;
 import com.beton408.repository.ActivityTypeRepository;
 import com.beton408.repository.UserActivityRepository;
 import com.beton408.repository.UserRepository;
-import jakarta.persistence.criteria.From;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -45,8 +39,8 @@ public class ActivityController {
     public Page<ActivityEntity> getAllFaqs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "ASC") String sortDir,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir,
             @RequestParam(required = false, defaultValue = "") String searchTerm,
             @RequestParam(required = false, defaultValue = "") String status,
             @RequestParam(required = false) String startTime,
@@ -100,7 +94,7 @@ public class ActivityController {
 
         return activityRepository.findAll(spec, paging);
     }
-
+    //tạo mới hoạt động
     @PostMapping("/create")
     public ResponseEntity<ActivityEntity> createActivity(@RequestBody ActivityResponse activityResponse) {
         // Lấy activityType từ activityTypeRepository dựa trên tên
@@ -120,7 +114,7 @@ public class ActivityController {
         ActivityEntity savedActivity = activityRepository.save(activity);
         return ResponseEntity.ok(savedActivity);
     }
-
+    //cập nhật hoạt động
     @PutMapping("/update/{id}")
     public ResponseEntity<ActivityEntity> updateActivity(@PathVariable(value = "id") Long activityId,
                                                          @RequestBody ActivityResponse activityResponse) {
@@ -148,7 +142,7 @@ public class ActivityController {
 
         return ResponseEntity.ok(updatedActivity);
     }
-
+    //xóa hoạt động
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteActivity(@PathVariable("id") Long id) {
         ActivityEntity activity = activityRepository.findById(id)
@@ -165,6 +159,7 @@ public class ActivityController {
         activityRepository.delete(activity);
         return ResponseEntity.ok().build();
     }
+    //đăng ký hoạt động của người dùng
     @PostMapping("/register")
     public ResponseEntity<?> registerActivity(@RequestBody RegisterActivity registerActivity) {
         ActivityEntity activity = activityRepository.findById(registerActivity.getActivityId())
@@ -184,6 +179,7 @@ public class ActivityController {
         userActivityRepository.save(userActivity);
         return ResponseEntity.ok(userActivity);
     }
+    //lấy danh sách hoạt động của một người dùng
     @GetMapping("/get/of/{userId}")
     public ResponseEntity<?> getActivityOfUser(@PathVariable("userId") Long userId) {
         List<UserActivity> userActivities = userActivityRepository.findByUserId(userId);
@@ -209,6 +205,7 @@ public class ActivityController {
 
         return ResponseEntity.ok(activityDTOs);
     }
+    //Lấy danh sách năm có trong danh sách hoạt động
     @GetMapping("/get/years")
     public List<Integer> getYears() {
         return activityRepository.findYears();

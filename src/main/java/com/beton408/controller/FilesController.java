@@ -25,23 +25,7 @@ public class FilesController {
     FilesStorageService storageService;
     @Autowired
     private UserRepository userRepository;
-
-    //  @PostMapping(value="/upload/{username}")
-//  public ResponseEntity<MessageResponse> uploadFile(@RequestParam("file") MultipartFile file,
-//                                                    @PathVariable  String username) {
-//    UserEntity user = userRepository.findByUsername(username);
-//    user.setAvatar(file.getOriginalFilename());
-//    userRepository.save(user);
-//    String message = "";
-//    try {
-//      storageService.save(file);
-//      message = "Uploaded the file successfully: " + file.getOriginalFilename();
-//      return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse(message));
-//    } catch (Exception e) {
-//      message = "Could not upload the file: " + file.getOriginalFilename() + ". Error: " + e.getMessage();
-//      return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new MessageResponse(message));
-//    }
-//  }
+    //tải ảnh lên server
     @PostMapping(value = "/upload/{username}")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,
                                                       @PathVariable String username) {

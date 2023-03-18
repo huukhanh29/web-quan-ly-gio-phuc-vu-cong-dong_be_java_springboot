@@ -2,35 +2,33 @@ package com.beton408.entity;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "feedback")
-public class FeedbackEntity {
+public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "content")
-    private String content;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "faq_id", nullable = true)
-    private FaqEntity faq;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = true)
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private UserEntity user;
+    private String title;
+    private String content;
+    private String status;
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
@@ -43,13 +41,25 @@ public class FeedbackEntity {
         this.updatedAt = updatedAt;
     }
 
-    public FeedbackEntity(Long id, String content, FaqEntity faq, UserEntity user, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Notification(Long id, UserEntity user, String title, String content, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
-        this.content = content;
-        this.faq = faq;
         this.user = user;
+        this.title = title;
+        this.content = content;
+        this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public Notification() {
     }
 
     public Long getId() {
@@ -60,22 +70,6 @@ public class FeedbackEntity {
         this.id = id;
     }
 
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public FaqEntity getFaq() {
-        return faq;
-    }
-
-    public void setFaq(FaqEntity faq) {
-        this.faq = faq;
-    }
-
     public UserEntity getUser() {
         return user;
     }
@@ -84,14 +78,20 @@ public class FeedbackEntity {
         this.user = user;
     }
 
-    public FeedbackEntity(Long id, String content, FaqEntity faq, UserEntity user) {
-        this.id = id;
-        this.content = content;
-        this.faq = faq;
-        this.user = user;
+    public String getContent() {
+        return content;
     }
 
-    public FeedbackEntity() {
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
 

@@ -1,12 +1,11 @@
 package com.beton408.controller;
 
-import com.beton408.entity.ActivityType;
-import com.beton408.entity.FaqEntity;
-import com.beton408.entity.UserAccumulatedHours;
-import com.beton408.entity.UserEntity;
+import com.beton408.entity.*;
 import com.beton408.exception.ResourceNotFoundException;
 import com.beton408.model.*;
+import com.beton408.repository.JobRepository;
 import com.beton408.repository.UserAccumulatedHoursRepository;
+import com.beton408.repository.UserActivityRepository;
 import com.beton408.repository.UserRepository;
 import com.beton408.security.UserDetailsImpl;
 import com.beton408.security.UserDetailsServiceImpl;
@@ -25,8 +24,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.context.SecurityContextHolder;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -45,6 +44,10 @@ public class UserController {
     PasswordEncoder passwordEncoder;
     @Autowired
     private UserAccumulatedHoursRepository userAccumulatedHoursRepository;
+    @Autowired
+    private JobRepository jobRepository;
+    @Autowired
+    private UserActivityRepository userActivityRepository;
 
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getOne(@PathVariable Long id) {
@@ -53,12 +56,12 @@ public class UserController {
             return new ResponseEntity<>(new MessageResponse("NOT FOUND"), HttpStatus.NOT_FOUND);
         }
         String job = "";
-        if(user.getJobTitle()!=null){
+        if (user.getJobTitle() != null) {
             job = user.getJobTitle().getName();
         }
         return new ResponseEntity<>(new UserInfo(user.getId(), user.getUsername(),
                 user.getName(), user.getEmail(), user.getRole(), user.getDateOfBirth(),
-                user.getPhone(),user.getGender(), user.getAddress(), user.getAvatar(),
+                user.getPhone(), user.getGender(), user.getAddress(), user.getAvatar(),
                 user.getStatus(), job), HttpStatus.OK);
     }
 
@@ -189,10 +192,50 @@ public class UserController {
                 .map(item -> item.getAuthority()).collect(Collectors.toList());
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), roles.get(0), userDetails.getUsername(), userDetails.getName(), userDetails.getEmail()));
     }
+    //lấy danh sách năm có hoạt động cộng ccuar user
     @GetMapping("/get/academic-year/{userId}")
     public ResponseEntity<?> getAcademicYearsByUser(@PathVariable Long userId) {
         List<String> academicYears = userAccumulatedHoursRepository.findDistinctAcademicYearsByUser(userId);
         return ResponseEntity.ok(academicYears);
     }
+    //lấy danh sách giảng viên khen thưởng hoặc khiển trách
+    @GetMapping("/lecturers")
+    public List<Map<String, Object>> getLecturers(@RequestParam(defaultValue = "#{T(java.time.Year).now().toString()}")
+                                                      String academicYear,
+                                                  @RequestParam(defaultValue = "Khen thưởng") String type) {
+        List<UserAccumulatedHours> userAccumulatedHoursList = userAccumulatedHoursRepository.findByAcademicYearAndUser_Role(academicYear, "LECTURER");
+        List<UserEntity> userEntityList = userRepository.findAll();
+        List<UserEntity> lecturers = new ArrayList<>();
+        if(type.equals("Khen thưởng")){
+             lecturers = userAccumulatedHoursList.stream()
+                    .filter(userAccumulatedHours -> userAccumulatedHours.getTotalHours() >= userAccumulatedHours.getUser().getJobTitle().getRequiredHours())
+                    .map(UserAccumulatedHours::getUser)
+                    .collect(Collectors.toList());
+        }
+        if(type.equals("Khiển trách")) {
+            lecturers = userEntityList.stream()
+                    .filter(user -> user.getRole().equals("LECTURER"))
+                    .collect(Collectors.toList());
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (UserEntity lecturer : lecturers) {
+            Map<String, Object> lecturerMap = new HashMap<>();
+            int countConfirm= userActivityRepository.countConfirmedActivitiesByUser(lecturer.getId());
+            int totalHours = 0;
+            UserAccumulatedHours userAccumulatedHours = userAccumulatedHoursRepository.findByAcademicYearAndUser_Id(academicYear, lecturer.getId());
+            if(userAccumulatedHours != null){
+                totalHours = userAccumulatedHours.getTotalHours();
+            }
+            lecturerMap.put("name", lecturer.getName());
+            lecturerMap.put("username", lecturer.getUsername());
+            lecturerMap.put("email", lecturer.getEmail());
+            lecturerMap.put("countConfirm", countConfirm);
+            lecturerMap.put("jobTitle", lecturer.getJobTitle().getName());
+            lecturerMap.put("totalHours", totalHours);
+            lecturerMap.put("requiredHours", lecturer.getJobTitle().getRequiredHours());
+            result.add(lecturerMap);
+        }
 
+        return result;
+    }
 }

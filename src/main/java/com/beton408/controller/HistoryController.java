@@ -61,7 +61,7 @@ public class HistoryController {
         return historyEntities.map(HistoryDto::fromEntity);
     }
 
-
+    //thêm lịch sử
     @PostMapping("/chat/{userId}/faq/{faqId}")
     public HistoryEntity createUserFaq(@PathVariable Long userId, @PathVariable Long faqId) {
         HistoryEntity userFaq = new HistoryEntity();
@@ -73,7 +73,7 @@ public class HistoryController {
         userFaq.setFaq(faq);
         return historyRepository.save(userFaq);
     }
-
+    //lấy dữ liệu cho chart line
     @GetMapping("/chart")
     public ResponseEntity<Map<String, Object>> getChart(@RequestParam("year") int year) {
         LocalDate startOfYear = LocalDate.of(year, 1, 1);
@@ -99,6 +99,7 @@ public class HistoryController {
 
         return ResponseEntity.ok().body(chartData);
     }
+    //lấy danh sách năm trong lịch sử
     @GetMapping("/chat/years")
     public ResponseEntity<List<Integer>> getYears() {
         List<Integer> years = historyRepository.findDistinctYear();

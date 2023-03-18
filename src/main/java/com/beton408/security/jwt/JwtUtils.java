@@ -19,10 +19,10 @@ public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
     private static final String SECRET_KEY = "77397A244326462948404D635166546A576E5A7234753778214125442A472D4B";
 
-//    @Value("!@#SECRET!@#")
-//    private String jwtSecret;
-//đây là phiên bản jwt cũ => cài secretkey 32 bit update jwt 0.11.5, update webconfig
-    @Value("#{50 * 60 * 1000}")
+    //    @Value("!@#SECRET!@#")
+    //    private String jwtSecret;
+    //đây là phiên bản jwt cũ => cài secretkey 32 bit update jwt 0.11.5, update webconfig
+    @Value("#{7 * 24 * 60 * 60 * 1000}")
     private int jwtExpirationMs;
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();

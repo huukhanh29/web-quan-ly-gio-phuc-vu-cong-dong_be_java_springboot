@@ -17,6 +17,7 @@ import java.util.List;
 public class ActivityTypeController {
     @Autowired
     private ActivityTypeRepository activityTypeRepository;
+    //lấy danh sách loại hoạt động
     @GetMapping("/get/all")
     public ResponseEntity<?> getAllActivityTypes() {
         List<ActivityType> activityTypes = activityTypeRepository.findAll();

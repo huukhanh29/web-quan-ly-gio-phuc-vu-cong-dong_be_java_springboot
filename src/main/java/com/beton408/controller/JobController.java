@@ -36,6 +36,7 @@ public class JobController {
         List<JobTitleEntity> activityTypes = jobRepository.findAll();
         return ResponseEntity.ok(activityTypes);
     }
+    //lấy dữ liệu cho chart pie
     @GetMapping("/chart-data/{userId}/{acdemic}")
     public Map<String, Integer> getChartData(@PathVariable Long userId,
                                              @PathVariable String acdemic) {

@@ -35,7 +35,7 @@ public class FaqController {
     private FeedbackRepository feedbackRepository;
     @Autowired
     private HistoryRepository historyRepository;
-
+    //lấy câu hỏi và đưa ra câu trả lời
     @PostMapping("/question")
     public ResponseEntity<?> getAnswer(@RequestBody QuestionRequest request) {
         String question = request.getQuestion().toLowerCase();
@@ -71,6 +71,7 @@ public class FaqController {
             return new ResponseEntity<String>(new String("unknown"),HttpStatus.OK);
         }
     }
+    //tạo faq mới
     @PostMapping("/create")
     public ResponseEntity<?> createFaq(@RequestBody FaqEntity faq) {
         if(faqRepository.findByQuestion(faq.getQuestion()) != null){
@@ -81,7 +82,7 @@ public class FaqController {
         }
 
     }
-
+    //lấy danh sách faq
     @GetMapping("/get/all")
     public Page<FaqEntity> getAllFaqs(
             @RequestParam(defaultValue = "0") int page,
@@ -106,12 +107,13 @@ public class FaqController {
         return faqRepository.findAll(spec, paging);
     }
 
-
+    //lấy faq theo id
     @GetMapping("/get/{id}")
     public FaqEntity getFaqById(@PathVariable(value = "id") Long faqId) {
         return faqRepository.findById(faqId)
                 .orElseThrow(() -> new ResourceNotFoundException("Faq", "id", faqId));
     }
+    //chỉnh sữa faq
     @PutMapping("/update/{id}")
     public FaqEntity updateFaq(@PathVariable(value = "id") Long faqId,
                                @RequestBody FaqEntity faqDetails) {
@@ -123,6 +125,7 @@ public class FaqController {
 
         return faqRepository.save(faq);
     }
+    //xóa faq
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteFaq(@PathVariable(value = "id") Long faqId) {
 
