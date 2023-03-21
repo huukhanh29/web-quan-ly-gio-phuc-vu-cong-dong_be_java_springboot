@@ -41,6 +41,9 @@ public class ActivityEntity {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+    @Formula("(CASE WHEN start_time > now() THEN 'Sắp diễn ra' WHEN end_time > now() THEN 'Đang diễn ra' ELSE 'Đã kết thúc' END)")
+    private String status;
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -80,8 +83,7 @@ public class ActivityEntity {
         this.accumulatedTime = accumulatedTime;
     }
 
-    @Formula("(CASE WHEN start_time > now() THEN 'Sắp diễn ra' WHEN end_time > now() THEN 'Đang diễn ra' ELSE 'Đã kết thúc' END)")
-    private String status;
+
 
     public String getStatus() {
         return status;

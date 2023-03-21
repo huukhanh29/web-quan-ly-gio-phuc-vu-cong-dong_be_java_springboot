@@ -210,4 +210,13 @@ public class ActivityController {
     public List<Integer> getYears() {
         return activityRepository.findYears();
     }
+    //lấy tổng số hoạt động sắp diễn ra
+    @GetMapping("/upcoming-activities/count")
+    public Long countUpcomingActivities() {
+        return activityRepository.countByStatus("Sắp diễn ra");
+    }
+    @GetMapping("/count")
+    public Long countActivity() {
+        return activityRepository.count();
+    }
 }

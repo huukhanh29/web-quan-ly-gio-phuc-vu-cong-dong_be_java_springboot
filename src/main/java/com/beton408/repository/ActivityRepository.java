@@ -19,5 +19,5 @@ public interface ActivityRepository extends JpaRepository<ActivityEntity, Long>,
     List<ActivityEntity> findByIdIn(List<Long> ids);
     @Query("SELECT DISTINCT YEAR(a.startTime) FROM ActivityEntity a ORDER BY YEAR(a.startTime) DESC")
     List<Integer> findYears();
-
+    Long countByStatus(String status);
 }

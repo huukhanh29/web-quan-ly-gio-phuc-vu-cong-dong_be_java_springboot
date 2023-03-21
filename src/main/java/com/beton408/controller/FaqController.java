@@ -141,4 +141,8 @@ public class FaqController {
 
         return ResponseEntity.ok().build();
     }
+    @GetMapping("/count")
+    public Long countFaq() {
+        return faqRepository.count();
+    }
 }

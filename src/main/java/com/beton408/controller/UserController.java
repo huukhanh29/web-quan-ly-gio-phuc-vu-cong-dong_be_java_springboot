@@ -71,7 +71,8 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir,
-            @RequestParam(required = false, defaultValue = "") String searchTerm
+            @RequestParam(required = false, defaultValue = "") String searchTerm,
+            @RequestParam(required = false) Long activityId
     ) {
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
@@ -88,6 +89,26 @@ public class UserController {
                         criteriaBuilder.like(root.get("email"), pattern)
                 );
             });
+        }
+        Specification<UserActivity> userActivitySpec = Specification.where(null);
+        List<Long> userIds;
+        if (activityId != null) {
+            userActivitySpec = userActivitySpec.and((root, criteriaQuery, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("activity").get("id"), activityId)
+            );
+            //System.out.println(userId);
+            List<UserActivity> userActivities = userActivityRepository.findByActivityId(activityId);
+
+            userIds = userActivities.stream()
+                    .filter(ua -> !"Chờ duyệt".equals(ua.getStatus()))
+                    .map(ua -> ua.getUser().getId())
+                    .collect(Collectors.toList());
+
+        } else {
+            userIds = null;
+        }
+        if (userIds != null) {
+            spec = spec.and((root, query, criteriaBuilder) -> root.get("id").in(userIds));
         }
         return userRepository.findAll(spec, paging);
     }
@@ -237,5 +258,10 @@ public class UserController {
         }
 
         return result;
+    }
+    //đếm tổng số lượng user
+    @GetMapping("/count")
+    public Long countUsers() {
+        return userRepository.count();
     }
 }
