@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,7 +35,15 @@ public class ActivityController {
     private UserActivityRepository userActivityRepository;
     @Autowired
     private UserRepository userRepository;
-
+    @GetMapping("/get/{id}")
+    public ResponseEntity<ActivityEntity> getActivityById(@PathVariable Long id) {
+        Optional<ActivityEntity> activityOptional = activityRepository.findById(id);
+        if (activityOptional.isPresent()) {
+            return ResponseEntity.ok(activityOptional.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
     @GetMapping("/get/all")
     public Page<ActivityEntity> getAllFaqs(
             @RequestParam(defaultValue = "0") int page,
@@ -43,6 +52,7 @@ public class ActivityController {
             @RequestParam(defaultValue = "DESC") String sortDir,
             @RequestParam(required = false, defaultValue = "") String searchTerm,
             @RequestParam(required = false, defaultValue = "") String status,
+            @RequestParam(required = false, defaultValue = "") String type,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime,
             @RequestParam(required = false) Long userId
@@ -62,6 +72,9 @@ public class ActivityController {
         }
         if (!status.isEmpty()) {
             spec = spec.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), status));
+        }
+        if (!type.isEmpty()) {
+            spec = spec.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(root.get("activityType").get("name"), type));
         }
         if (startTime != null) {
             LocalDateTime startTimes = LocalDate.parse(startTime).atStartOfDay();

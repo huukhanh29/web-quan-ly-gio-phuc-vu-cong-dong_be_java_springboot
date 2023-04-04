@@ -46,7 +46,7 @@ public class HistoryController {
             spec = spec.and((root, criteriaQuery, criteriaBuilder) -> {
                 String pattern = "%" + searchTerm + "%";
                 return criteriaBuilder.or(
-                        criteriaBuilder.like(root.get("question"), pattern)
+                        criteriaBuilder.like(root.get("faq").get("question"), pattern)
                 );
             });
         }

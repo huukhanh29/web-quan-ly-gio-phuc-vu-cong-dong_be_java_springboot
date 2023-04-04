@@ -72,7 +72,8 @@ public class UserController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir,
             @RequestParam(required = false, defaultValue = "") String searchTerm,
-            @RequestParam(required = false) Long activityId
+            @RequestParam(required = false) Long activityId,
+            @RequestParam(required = false) String role
     ) {
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);
@@ -109,6 +110,9 @@ public class UserController {
         }
         if (userIds != null) {
             spec = spec.and((root, query, criteriaBuilder) -> root.get("id").in(userIds));
+        }
+        if (role != null) {
+            spec = spec.and((root, criteriaQuery, criteriaBuilder) -> criteriaBuilder.equal(root.get("role"), role));
         }
         return userRepository.findAll(spec, paging);
     }
@@ -236,6 +240,13 @@ public class UserController {
         if(type.equals("Khiển trách")) {
             lecturers = userEntityList.stream()
                     .filter(user -> user.getRole().equals("LECTURER"))
+                    .filter(user -> {
+                        UserAccumulatedHours userAccumulatedHours = userAccumulatedHoursList.stream()
+                                .filter(uah -> uah.getUser().getId().equals(user.getId()))
+                                .findFirst()
+                                .orElse(null);
+                        return userAccumulatedHours == null || userAccumulatedHours.getTotalHours() < userAccumulatedHours.getUser().getJobTitle().getRequiredHours();
+                    })
                     .collect(Collectors.toList());
         }
         List<Map<String, Object>> result = new ArrayList<>();

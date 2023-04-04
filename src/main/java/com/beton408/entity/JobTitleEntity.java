@@ -3,6 +3,9 @@ package com.beton408.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
 @Entity
 @Table(name = "job_title")
 public class JobTitleEntity  {
@@ -49,4 +52,5 @@ public class JobTitleEntity  {
 
     public JobTitleEntity() {
     }
+
 }

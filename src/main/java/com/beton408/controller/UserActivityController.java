@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Year;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -184,7 +185,6 @@ public class UserActivityController {
             return ResponseEntity.notFound().build();
         }
     }
-
     //hủy đăng ký một hoạt động
     @DeleteMapping("/destroy/{userId}/{activityId}")
     public ResponseEntity<?> destroyRegister(@PathVariable(value = "userId") Long userId,
@@ -203,12 +203,13 @@ public class UserActivityController {
         Claims claims = JwtUtils.getClaimsFromToken(token);
         Long currentUserId = Long.parseLong(String.valueOf(claims.get("id", Integer.class)));
         UserEntity currentUser = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         if(currentUser.getRole().equals("LECTURER")){
             //tạo thông báo hủy
             Notification notification =new Notification();
             notification.setContent("Bạn đã hủy đăng ký tham gia hoạt động "+
                     userActivity.getActivity().getName() +".");
-            notification.setUser(currentUser);
+            notification.setUser(user);
             notification.setTitle("Hủy đăng ký hoạt động");
             notification.setStatus("Chưa đọc");
             notificationRepository.save(notification);
@@ -220,7 +221,7 @@ public class UserActivityController {
                 notification.setContent("Yêu cầu đăng ký hoạt động "+
                         userActivity.getActivity().getName() +
                         "của bạn đã bị hủy.");
-                notification.setUser(currentUser);
+                notification.setUser(user);
                 notification.setTitle("Hủy đăng ký hoạt động");
                 notification.setStatus("Chưa đọc");
                 notificationRepository.save(notification);
@@ -229,14 +230,28 @@ public class UserActivityController {
                 notification.setContent("Xác nhận tham gia hoạt động "+
                         userActivity.getActivity().getName() +
                         " của bạn thất bại.");
-                notification.setUser(currentUser);
+                notification.setUser(user);
                 notification.setTitle("Hủy xác nhận hoạt động");
                 notification.setStatus("Chưa đọc");
                 notificationRepository.save(notification);
             }
-
         }
         userActivityRepository.delete(userActivity);
         return ResponseEntity.ok().build();
     }
+    //lấy danh sách hoạt động của một người dùng đã xác nhận
+    @GetMapping("/users/{userId}/activities")
+    public List<ActivityEntity> getConfirmedActivitiesByUserId(@PathVariable Long userId) {
+        List<ActivityEntity> confirmedActivities = new ArrayList<>();
+
+        UserEntity user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        List<UserActivity> userActivities = userActivityRepository.findByUserAndStatus(user, "Đã xác nhận");
+
+        for (UserActivity userActivity : userActivities) {
+            confirmedActivities.add(userActivity.getActivity());
+        }
+
+        return confirmedActivities;
+    }
+
 }

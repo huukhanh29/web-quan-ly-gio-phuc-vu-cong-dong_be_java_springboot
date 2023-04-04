@@ -3,6 +3,7 @@ package com.beton408.repository;
 import com.beton408.entity.ActivityEntity;
 import com.beton408.entity.HistoryEntity;
 import com.beton408.entity.UserActivity;
+import com.beton408.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -32,4 +33,5 @@ public interface UserActivityRepository extends JpaRepository<UserActivity, Long
     List<String> findDistinctActivity();
     @Query("SELECT COUNT(ua) FROM UserActivity ua WHERE ua.user.id = :userId AND ua.status = 'Đã xác nhận'")
     int countConfirmedActivitiesByUser(@Param("userId") Long userId);
+    List<UserActivity> findByUserAndStatus(UserEntity user, String status);
 }
