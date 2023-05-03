@@ -240,7 +240,7 @@ public class UserActivityController {
         return ResponseEntity.ok().build();
     }
     //lấy danh sách hoạt động của một người dùng đã xác nhận
-    @GetMapping("/users/{userId}/activities")
+    @GetMapping("/users/{userId}")
     public List<ActivityEntity> getConfirmedActivitiesByUserId(@PathVariable Long userId) {
         List<ActivityEntity> confirmedActivities = new ArrayList<>();
 
