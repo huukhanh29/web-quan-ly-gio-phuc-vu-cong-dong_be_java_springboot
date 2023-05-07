@@ -21,8 +21,8 @@ public interface FeedbackRepository extends JpaRepository<FeedbackEntity, Long>,
     FeedbackEntity findByContent(String content);
 
     Page<FeedbackEntity> findAll(Specification<FeedbackEntity> spec, Pageable pageable);
-    @Query("SELECT ua FROM FeedbackEntity ua WHERE ua.faq.id = :faqId")
-    FeedbackEntity findByFaqId(@Param("faqId") Long faqId);
+
+    FeedbackEntity findFirstByFaqId(Long faqId);
     @Transactional
     @Modifying
     @Query("DELETE FROM FeedbackEntity f WHERE f.faq IS NOT NULL")

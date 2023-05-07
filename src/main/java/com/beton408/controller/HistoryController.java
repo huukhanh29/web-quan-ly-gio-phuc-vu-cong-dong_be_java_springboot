@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,7 +33,7 @@ public class HistoryController {
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "10") int size,
                                         @RequestParam(defaultValue = "id") String sortBy,
-                                        @RequestParam(defaultValue = "ASC") String sortDir,
+                                        @RequestParam(defaultValue = "DESC") String sortDir,
                                         @RequestParam(required = false, defaultValue = "") String searchTerm) {
 
         Sort sort = Sort.by(Sort.Direction.fromString(sortDir), sortBy);

@@ -25,7 +25,8 @@ public interface HistoryRepository extends JpaRepository<HistoryEntity, Long>, J
     @Query("SELECT DISTINCT YEAR(h.createdAt) FROM HistoryEntity h ORDER BY YEAR(h.createdAt) DESC")
     List<Integer> findDistinctYear();
 
-    @Query("SELECT h FROM HistoryEntity h WHERE h.faq.id = :faqId")
-    HistoryEntity findByFaqId(@Param("faqId") Long faqId);
+    HistoryEntity findFirstByFaqId(Long faqId);
+
+
 }
 

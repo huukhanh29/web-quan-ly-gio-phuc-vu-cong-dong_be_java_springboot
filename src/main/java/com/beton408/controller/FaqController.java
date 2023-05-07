@@ -132,8 +132,8 @@ public class FaqController {
         FaqEntity faq = faqRepository.findById(faqId)
                 .orElseThrow(() -> new ResourceNotFoundException("Faq", "id", faqId));
 
-        FeedbackEntity feedback = feedbackRepository.findByFaqId(faqId);
-        HistoryEntity historyEntity = historyRepository.findByFaqId(faqId);
+        FeedbackEntity feedback = feedbackRepository.findFirstByFaqId(faqId);
+        HistoryEntity historyEntity = historyRepository.findFirstByFaqId(faqId);
         if(feedback!= null || historyEntity != null){
             return new ResponseEntity(new MessageResponse("IS USE"), HttpStatus.BAD_REQUEST);
         }
