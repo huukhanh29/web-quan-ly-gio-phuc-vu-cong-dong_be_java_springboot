@@ -18,12 +18,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+
+import java.util.*;
+
 import org.springframework.data.jpa.domain.Specification;
-import static com.beton408.security.Helpers.calculateSimilarity;
-import static com.beton408.security.Helpers.createSlug;
+
+import static com.beton408.security.Helpers.*;
 
 @RestController
 @RequestMapping("/faq")
@@ -71,6 +71,23 @@ public class FaqController {
             return new ResponseEntity<String>(new String("unknown"),HttpStatus.OK);
         }
     }
+//    public ResponseEntity<?> getAnswer(@RequestBody QuestionRequest request) {
+//        String question = request.getQuestion().toLowerCase();
+//        List<FaqEntity> faqList = faqRepository.findAll();
+//        Map<FaqEntity, Float> similarityMap = new HashMap<>();
+//        for (FaqEntity faq : faqList) {
+//            String query = faq.getQuestion();
+//            String q = query.toLowerCase();
+//            float similarity = calculateCosineSimilarity(createSlug(question), createSlug(q));
+//            similarityMap.put(faq, similarity);
+//        }
+//        FaqEntity mostSimilarFaq = Collections.max(similarityMap.entrySet(), Map.Entry.comparingByValue()).getKey();
+//        if (similarityMap.get(mostSimilarFaq) > 0.5) {
+//            return ResponseEntity.ok(mostSimilarFaq);
+//        } else {
+//            return new ResponseEntity<String>(new String("unknown"), HttpStatus.OK);
+//        }
+//    }
     //tạo faq mới
     @PostMapping("/create")
     public ResponseEntity<?> createFaq(@RequestBody FaqEntity faq) {

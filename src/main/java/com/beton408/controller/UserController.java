@@ -70,7 +70,7 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "DESC") String sortDir,
+            @RequestParam(defaultValue = "ASC") String sortDir,
             @RequestParam(required = false, defaultValue = "") String searchTerm,
             @RequestParam(required = false) Long activityId,
             @RequestParam(required = false) String role
