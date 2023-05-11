@@ -148,7 +148,6 @@ public class FaqController {
 
         FaqEntity faq = faqRepository.findById(faqId)
                 .orElseThrow(() -> new ResourceNotFoundException("Faq", "id", faqId));
-
         FeedbackEntity feedback = feedbackRepository.findFirstByFaqId(faqId);
         HistoryEntity historyEntity = historyRepository.findFirstByFaqId(faqId);
         if(feedback!= null || historyEntity != null){
